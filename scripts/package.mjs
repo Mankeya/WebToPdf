@@ -25,6 +25,8 @@ try {
     ]);
   } catch {
     // Alternativa sem PowerShell quando o comando nativo não estiver disponível.
+    // O caminho de saída precisa ser absoluto: o tar troca o diretório de trabalho
+    // antes de abrir o arquivo e um caminho relativo cairia dentro do staging.
     await run('tar', ['-a', '-c', '-f', output, '-C', staging, 'webtopdf']);
   }
   console.log(`Pacote gerado: ${output}`);

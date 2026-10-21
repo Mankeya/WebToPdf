@@ -45,6 +45,9 @@ jobs:
       - name: Conferir o manifesto gerado
         run: node scripts/verify-manifest.mjs
 
+      - name: Conferir a raiz do repositório
+        run: node scripts/check-workspace.mjs
+
       - name: Guardar a extensão empacotada
         uses: actions/upload-artifact@v4
         with:
