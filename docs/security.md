@@ -68,4 +68,5 @@ O PDF.js foi verificado: as versões empacotadas (`pdf.mjs` e `pdf.worker.min.mj
 
 - `npm test` cobre as regras puras: sanitização de nomes, resolução de nome final, seleção de nome livre, validação de preferências e de URLs.
 - `npm run test:e2e` cobre o fluxo real em Chromium: impressão, prévia, navegação de páginas, ajustes, persistência e download com verificação do arquivo e da ausência de sobrescrita.
-- A verificação do `manifest.json` gerado (`dist/manifest.json`) é parte do build.
+- `npm run verify:manifest` bloqueia permissões fora da lista aprovada, chaves proibidas no manifesto (`host_permissions`, `content_scripts`, `web_accessible_resources`, `externally_connectable`) e uma CSP afrouxada. O script roda no CI, no build local e pode ser usado como gate de pull request.
+- A branch `main` exige os três checks do CI antes de aceitar um merge.
