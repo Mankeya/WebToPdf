@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  quality:
+    name: Tipos, testes unitários e build
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificar tipos
+        run: npm run typecheck
+
+      - name: Testes unitários
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Conferir o manifesto gerado
+        run: node scripts/verify-manifest.mjs
+
+      - name: Guardar a extensão empacotada
+        uses: actions/upload-artifact@v4
+        with:
+          name: webtopdf-extension
+          path: dist/
+          retention-days: 14
+
+  e2e:
+    name: Testes de fluxo em Chromium
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Instalar o Chromium do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes de ponta a ponta
+        run: npm run test:e2e
+
+  security:
+    name: Auditoria de dependências e manifesto
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Auditar dependências de produção
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Conferir permissões e CSP do manifesto de origem
+        run: node scripts/verify-manifest.mjs public/manifest.json

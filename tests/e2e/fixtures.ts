@@ -52,7 +52,12 @@ export const test = base.extend<{ extensionWorker: Worker; extensionId: string; 
       if (!address || typeof address === 'string') throw new Error('Servidor de fixture indisponível.');
       await use(`http://127.0.0.1:${address.port}/report.html`);
     } finally {
-      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+      // O Chrome mantém conexões alive; sem encerrá-las o close() nunca
+      // concluiria e o teardown estouraria o tempo limite do teste.
+      server.closeAllConnections();
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      });
     }
   },
 });
