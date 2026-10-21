@@ -40,5 +40,5 @@ O Chrome 155 não aceita mais `--load-extension` na linha de comando; a extensã
 
 ## Ainda não configurado
 
-- CI remoto e branch principal com regras de proteção.
 - Publicação na Chrome Web Store.
+- Aprovação humana obrigatória no PR: hoje o repositório tem um único responsável e o GitHub não permite que o autor aprove o próprio PR. A regra fica pronta para ser ativada quando houver um segundo revisor.

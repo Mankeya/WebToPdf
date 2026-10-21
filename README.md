@@ -60,6 +60,10 @@ Limitações conhecidas:
 
 Consulte [a especificação](docs/specification.md), [a arquitetura](docs/architecture.md), [a segurança](docs/security.md), [a validação](docs/validation.md) e [o checklist de produção](docs/production-checklist.md).
 
-## Git
+## Git e integração contínua
 
-Trabalho em branches curtas, commits convencionais e integração por PR. Não fazer push direto na principal ou force-push. Não há CI remoto ou regras de proteção configurados nesta etapa. Dados de autoria são configuração local do Git, não arquivos do produto.
+- `main` é a branch principal e está **protegida**: push direto é recusado e toda mudança entra por PR.
+- Checks obrigatórios em `main`: `Tipos, testes unitários e build`, `Testes de fluxo em Chromium` e `Auditoria de dependências e manifesto`. O PR só pode ser integrado com os três verdes e a branch atualizada.
+- Force-push, exclusão de branch, histórico não linear e conversas não resolvidas são bloqueados.
+- `npm run package` gera o `.zip` distribuível; tags `v*` publicam a release com o pacote anexado.
+- Trabalho em branches curtas e commits convencionais. Dados de autoria são configuração local do Git, não arquivos do produto.
