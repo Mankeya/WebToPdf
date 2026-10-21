@@ -1,8 +1,21 @@
 import { fileURLToPath } from 'node:url';
+import { cpSync } from 'node:fs';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
   base: './',
+  plugins: [{
+    name: 'local-pdf-resources',
+    closeBundle() {
+      for (const directory of ['cmaps', 'standard_fonts']) {
+        cpSync(
+          fileURLToPath(new URL(`./node_modules/pdfjs-dist/${directory}`, import.meta.url)),
+          fileURLToPath(new URL(`./dist/pdf-assets/${directory}`, import.meta.url)),
+          { recursive: true },
+        );
+      }
+    },
+  }],
   build: {
     target: 'es2022',
     rollupOptions: {

@@ -11,13 +11,13 @@
         <p class="eyebrow">CONVERSÃO LOCAL</p>
         <h1>WEBtoPDF</h1>
       </div>
-      <span class="development-label">Estrutura inicial</span>
+      <span class="development-label">Prévia local</span>
     </header>
     <main>
       <aside class="settings" aria-labelledby="settings-title">
         <h2 id="settings-title">Ajustes de impressão</h2>
-        <p>Os controles serão habilitados após a integração do conversor.</p>
-        <form>
+        <p>Ajuste as opções e atualize a prévia. A aba original deve permanecer aberta para gerar novamente.</p>
+        <form id="print-form">
           <fieldset disabled>
             <legend>Configuração do documento</legend>
             <label for="filename">Nome do arquivo</label>
@@ -38,7 +38,7 @@
             <input id="scale" name="scale" type="number" min="10" max="200" />
             <label class="checkbox-label"><input id="backgrounds" type="checkbox" /> Incluir fundos</label>
             <label class="checkbox-label"><input id="header-footer" type="checkbox" /> Cabeçalho e rodapé</label>
-            <button type="button">Atualizar prévia</button>
+            <button id="update-preview" type="submit">Atualizar prévia</button>
           </fieldset>
         </form>
       </aside>
@@ -50,12 +50,25 @@
             <button type="button" disabled>Salvar como…</button>
           </div>
         </div>
-        <div class="empty-state">
-          <p class="status-label">Em desenvolvimento</p>
-          <h3>Seu documento aparecerá aqui</h3>
-          <p id="status" role="status">A conversão e a visualização PDF ainda não estão implementadas.</p>
-          <p class="privacy-note">Sem envio de páginas ou documentos para servidores.</p>
+        <p id="status" role="status" aria-live="polite">Preparando conversão…</p>
+        <div class="viewer-controls" hidden>
+          <button id="previous-page" type="button" aria-label="Página anterior">Anterior</button>
+          <label for="page-number">Página</label>
+          <input id="page-number" type="number" min="1" value="1" aria-label="Página atual" />
+          <span id="page-count"></span>
+          <button id="next-page" type="button" aria-label="Próxima página">Próxima</button>
+          <label for="zoom">Zoom</label>
+          <select id="zoom">
+            <option value="0.5">50%</option>
+            <option value="0.75">75%</option>
+            <option value="1" selected>100%</option>
+            <option value="1.25">125%</option>
+            <option value="1.5">150%</option>
+            <option value="2">200%</option>
+          </select>
         </div>
+        <div id="pdf-container" class="pdf-container" aria-label="Documento PDF"></div>
+        <p class="privacy-note">Sem envio de páginas ou documentos para servidores. Fechar ou recarregar esta aba descarta o PDF.</p>
       </section>
     </main>
     <script type="module" src="/src/preview/index.ts"></script>
