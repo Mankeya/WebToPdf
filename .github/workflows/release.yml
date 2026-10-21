@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag a publicar (ex.: v0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Empacotar e publicar
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Testes e build
+        run: npm run check
+
+      - name: Testes de ponta a ponta
+        run: npm run test:e2e
+
+      - name: Conferir o manifesto gerado
+        run: node scripts/verify-manifest.mjs
+
+      - name: Empacotar a extensão
+        run: npm run package
+
+      - name: Publicar a release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: WEBtoPDF ${{ inputs.tag || github.ref_name }}
+          generate_release_notes: true
+          files: webtopdf-*.zip
