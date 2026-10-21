@@ -38,6 +38,9 @@ jobs:
       - name: Conferir o manifesto gerado
         run: node scripts/verify-manifest.mjs
 
+      - name: Conferir a raiz do repositório
+        run: node scripts/check-workspace.mjs
+
       - name: Empacotar a extensão
         run: npm run package
 

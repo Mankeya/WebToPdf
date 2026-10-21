@@ -24,7 +24,9 @@ Versão 1.0.0. Últimas mudanças em [CHANGELOG.md](CHANGELOG.md).
 - `npm run build`: gerar a extensão em `dist/`.
 - `npm run package`: gerar `webtopdf-<versão>.zip` distribuível.
 - `npm run icons`: regerar os PNG a partir de `public/icons/icon.svg`.
+- `npm run store:screenshots`: gerar as capturas para a Chrome Web Store.
 - `npm run verify:manifest`: conferir permissões, CSP e versão do manifesto.
+- `npm run verify:workspace`: conferir que não há artefatos de build na raiz do repositório.
 - `npm run check`: executar tipos, testes unitários e build.
 
 ## Instalação
@@ -65,7 +67,7 @@ Limitações conhecidas:
 - O layout de impressão do site pode diferir do exibido na tela. Conteúdo ainda não carregado por rolagem pode faltar.
 - Limite inicial de 32 MB por PDF e 60 segundos por conversão.
 
-Consulte [a especificação](docs/specification.md), [a arquitetura](docs/architecture.md), [a segurança](docs/security.md), [a validação](docs/validation.md) e [o checklist de produção](docs/production-checklist.md).
+Consulte [a especificação](docs/specification.md), [a arquitetura](docs/architecture.md), [a segurança](docs/security.md), [a validação](docs/validation.md), [o checklist de produção](docs/production-checklist.md) e [a distribuição](docs/distribution.md).
 
 ## Git e integração contínua
 
