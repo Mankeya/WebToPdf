@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WEBtoPDF — Prévia</title>
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">CONVERSÃO LOCAL</p>
+        <h1>WEBtoPDF</h1>
+      </div>
+      <span class="development-label">Estrutura inicial</span>
+    </header>
+    <main>
+      <aside class="settings" aria-labelledby="settings-title">
+        <h2 id="settings-title">Ajustes de impressão</h2>
+        <p>Os controles serão habilitados após a integração do conversor.</p>
+        <form>
+          <fieldset disabled>
+            <legend>Configuração do documento</legend>
+            <label for="filename">Nome do arquivo</label>
+            <input id="filename" name="filename" type="text" value="pagina.pdf" />
+            <label for="paper-size">Papel</label>
+            <select id="paper-size" name="paperSize">
+              <option value="A4">A4</option>
+              <option value="Letter">Carta</option>
+            </select>
+            <label for="orientation">Orientação</label>
+            <select id="orientation" name="orientation">
+              <option value="portrait">Retrato</option>
+              <option value="landscape">Paisagem</option>
+            </select>
+            <label for="margin">Margens (mm)</label>
+            <input id="margin" name="margin" type="number" min="0" max="50" />
+            <label for="scale">Escala (%)</label>
+            <input id="scale" name="scale" type="number" min="10" max="200" />
+            <label class="checkbox-label"><input id="backgrounds" type="checkbox" /> Incluir fundos</label>
+            <label class="checkbox-label"><input id="header-footer" type="checkbox" /> Cabeçalho e rodapé</label>
+            <button type="button">Atualizar prévia</button>
+          </fieldset>
+        </form>
+      </aside>
+      <section class="preview" aria-labelledby="preview-title">
+        <div class="preview-toolbar">
+          <h2 id="preview-title">Prévia do PDF</h2>
+          <div class="download-actions">
+            <button type="button" disabled>Baixar PDF</button>
+            <button type="button" disabled>Salvar como…</button>
+          </div>
+        </div>
+        <div class="empty-state">
+          <p class="status-label">Em desenvolvimento</p>
+          <h3>Seu documento aparecerá aqui</h3>
+          <p id="status" role="status">A conversão e a visualização PDF ainda não estão implementadas.</p>
+          <p class="privacy-note">Sem envio de páginas ou documentos para servidores.</p>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/preview/index.ts"></script>
+  </body>
+</html>

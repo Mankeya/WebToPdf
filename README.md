@@ -8,7 +8,7 @@ Estrutura inicial em desenvolvimento. A conversão real e a visualização PDF a
 
 ## Ambiente de desenvolvimento
 
-- Node.js 22.12+ (ou 24+), npm e Chrome estável no Windows.
+- Node.js 22.12+, 24.x ou 26+ (conforme `engines` do pacote), npm e Chrome estável no Windows.
 - `npm ci`: instalar as dependências fixadas no lockfile.
 - `npm run dev`: gerar a extensão continuamente em `dist/`.
 - `npm run typecheck`: verificar tipos.

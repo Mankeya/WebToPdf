@@ -1,0 +1,52 @@
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #172b42;
+  background: #edf1f6;
+  font-synthesis: none;
+  line-height: 1.5;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: 0; font-size: 1.6rem; }
+h2 { font-size: 1.1rem; }
+h3 { font-size: 1.5rem; }
+button, input, select { font: inherit; }
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  background: #fff;
+  border-bottom: 1px solid #d6deea;
+  gap: 1rem;
+}
+
+.eyebrow { margin-bottom: .25rem; font-size: .7rem; letter-spacing: .15em; color: #526477; }
+.development-label { padding: .35rem .8rem; border-radius: 1rem; background: #fff1cf; font-size: .8rem; }
+main { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: calc(100vh - 100px); }
+.settings { padding: 1.5rem; background: #fff; border-right: 1px solid #d6deea; }
+.settings p { font-size: .85rem; color: #526477; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { margin-bottom: 1rem; font-size: .85rem; font-weight: 600; }
+label { display: block; margin-bottom: .35rem; font-size: .85rem; }
+input:not([type="checkbox"]), select { width: 100%; padding: .55rem; margin-bottom: 1rem; border: 1px solid #c6d0dd; border-radius: .4rem; }
+.checkbox-label { display: flex; align-items: center; gap: .4rem; margin-bottom: .8rem; }
+button { border: 0; border-radius: .4rem; padding: .65rem 1rem; background: #164f8e; color: #fff; }
+button:disabled { background: #dde4ed; color: #4d5d70; cursor: not-allowed; }
+.preview { padding: 1.5rem 2rem; }
+.preview-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.preview-toolbar h2 { margin: 0; }
+.download-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.empty-state { max-width: 720px; margin: 4rem auto; padding: 3rem 2rem; text-align: center; border: 1px dashed #b7c6d8; border-radius: .8rem; background: #fff; }
+.status-label { font-size: .8rem; color: #526477; text-transform: uppercase; letter-spacing: .1em; }
+.privacy-note { margin-bottom: 0; font-size: .8rem; color: #526477; }
+
+@media (max-width: 760px) {
+  main { grid-template-columns: 1fr; }
+  .app-header, .preview, .settings { padding: 1rem; }
+  .settings { border-right: 0; border-bottom: 1px solid #d6deea; }
+  .empty-state { margin: 2rem auto; padding: 2rem 1rem; }
+}
