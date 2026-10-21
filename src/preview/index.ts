@@ -1,6 +1,6 @@
 import { DEFAULT_PRINT_SETTINGS, parsePrintSettings } from '../shared/settings';
 import type { PrintSettings } from '../shared/settings';
-import { createPdfFilename } from '../shared/filename';
+import { createPdfFilename, sanitizeTitle } from '../shared/filename';
 import { parseSourceTabId } from '../shared/preview-url';
 import { requestConversion } from './conversion-client';
 import { PdfViewer } from './pdf-viewer';
@@ -28,11 +28,14 @@ const next = element<HTMLButtonElement>('#next-page');
 const pageNumber = element<HTMLInputElement>('#page-number');
 const pageCount = element<HTMLElement>('#page-count');
 const zoom = element<HTMLSelectElement>('#zoom');
+const downloadBtn = element<HTMLButtonElement>('#download-pdf');
+const saveAsBtn = element<HTMLButtonElement>('#save-as-pdf');
 const viewer = new PdfViewer(element('#pdf-container'));
 const sourceTabId = parseSourceTabId(location.search);
 let busy = false;
 let controller: AbortController | null = null;
 let documentBytes: Uint8Array<ArrayBuffer> | null = null;
+let documentTitle = '';
 let filenameEdited = false;
 let savedSettings: PrintSettings = DEFAULT_PRINT_SETTINGS;
 
@@ -87,6 +90,9 @@ function updateControls(): void {
   next.disabled = busy || viewer.pageNumber >= viewer.pageCount;
   pageNumber.disabled = busy;
   zoom.disabled = busy;
+  const hasPdf = documentBytes !== null;
+  downloadBtn.disabled = busy || !hasPdf;
+  saveAsBtn.disabled = busy || !hasPdf;
   pageNumber.value = String(viewer.pageNumber);
   pageNumber.max = String(viewer.pageCount);
   pageCount.textContent = `de ${viewer.pageCount}`;
@@ -108,6 +114,7 @@ async function convert(): Promise<void> {
     const result = await requestConversion(sourceTabId, settings, controller.signal);
     await viewer.load(result.bytes);
     documentBytes = result.bytes;
+    documentTitle = result.title;
     if (!filenameEdited) filename.value = createPdfFilename(result.title);
     status.textContent = `PDF pronto — ${viewer.pageCount} ${viewer.pageCount === 1 ? 'página' : 'páginas'}.`;
   } catch (error) {
@@ -133,6 +140,39 @@ async function navigate(page: number): Promise<void> {
   }
 }
 
+async function downloadPdf(saveAs: boolean): Promise<void> {
+  if (busy || !documentBytes) return;
+  const name = filename.value.trim() || createPdfFilename(documentTitle);
+  const safeName = sanitizeTitle(name.replace(/\.pdf$/i, '')) + '.pdf';
+  try {
+    busy = true;
+    updateControls();
+    status.textContent = saveAs ? 'Abrindo diálogo de salvamento…' : 'Baixando PDF…';
+    const blob = new Blob([documentBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    try {
+      const downloadId = await chrome.downloads.download({
+        url,
+        filename: safeName,
+        saveAs,
+        conflictAction: 'uniquify',
+      });
+      if (downloadId === undefined) {
+        status.textContent = 'O download foi cancelado ou bloqueado.';
+      } else {
+        status.textContent = saveAs ? 'Salvo com sucesso.' : 'Download iniciado.';
+      }
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  } catch (error) {
+    status.textContent = `Falha no download: ${error instanceof Error ? error.message : 'Erro desconhecido.'}`;
+  } finally {
+    busy = false;
+    updateControls();
+  }
+}
+
 filename.addEventListener('input', () => { filenameEdited = true; });
 form.addEventListener('submit', (event) => { event.preventDefault(); void convert(); });
 form.addEventListener('change', () => {
@@ -142,6 +182,8 @@ previous.addEventListener('click', () => void navigate(viewer.pageNumber - 1));
 next.addEventListener('click', () => void navigate(viewer.pageNumber + 1));
 pageNumber.addEventListener('change', () => void navigate(pageNumber.valueAsNumber));
 zoom.addEventListener('change', () => { viewer.zoom = Number(zoom.value); void navigate(viewer.pageNumber); });
+downloadBtn.addEventListener('click', () => void downloadPdf(false));
+saveAsBtn.addEventListener('click', () => void downloadPdf(true));
 window.addEventListener('pagehide', () => {
   controller?.abort();
   documentBytes = null;

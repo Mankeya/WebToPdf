@@ -3,7 +3,7 @@
   "name": "WEBtoPDF — Desenvolvimento",
   "description": "Estrutura inicial para conversão local de páginas em PDF com prévia.",
   "version": "0.1.0",
-  "permissions": ["activeTab", "debugger", "storage"],
+  "permissions": ["activeTab", "debugger", "storage", "downloads"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
