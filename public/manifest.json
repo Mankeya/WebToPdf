@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "WEBtoPDF — Desenvolvimento",
-  "description": "Estrutura inicial para conversão local de páginas em PDF com prévia.",
-  "version": "0.1.0",
+  "name": "WEBtoPDF",
+  "description": "Converte a página atual em PDF com prévia e ajustes de impressão. Processamento local, sem envio de dados a servidores.",
+  "version": "1.0.0",
   "minimum_chrome_version": "116",
   "icons": {
     "16": "icons/icon-16.png",
@@ -16,7 +16,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Abrir WEBtoPDF (estrutura inicial)",
+    "default_title": "Converter a página atual em PDF",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",
