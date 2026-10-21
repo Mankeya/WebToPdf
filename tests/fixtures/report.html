@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Relatório de teste WEBtoPDF</title>
+  <style>
+    body { font: 16px Arial, sans-serif; margin: 24px; color: #172b42; }
+    section { break-after: page; }
+    section:last-child { break-after: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { padding: 12px; border: 1px solid #172b42; }
+    .banner { padding: 24px; background: #ddeeff; }
+    img { width: 120px; height: 80px; }
+  </style>
+</head>
+<body>
+  <section>
+    <h1>Relatório de teste WEBtoPDF</h1>
+    <p class="banner">Conteúdo de validação local: impressão com texto selecionável.</p>
+    <p>Este artigo é uma fixture pública de teste, sem informações confidenciais.</p>
+    <a href="https://example.com/">Link de referência</a>
+  </section>
+  <section>
+    <h2>Imagem e tabela</h2>
+    <img alt="Imagem de teste" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80'%3E%3Crect width='120' height='80' fill='%23164f8e'/%3E%3C/svg%3E" />
+    <table>
+      <thead><tr><th>Item</th><th>Quantidade</th></tr></thead>
+      <tbody><tr><td>Documentos de teste</td><td>42</td></tr></tbody>
+    </table>
+  </section>
+</body>
+</html>
