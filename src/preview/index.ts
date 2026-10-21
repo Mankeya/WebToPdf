@@ -1,8 +1,9 @@
 import { DEFAULT_PRINT_SETTINGS, parsePrintSettings } from '../shared/settings';
 import type { PrintSettings } from '../shared/settings';
-import { createPdfFilename, sanitizeTitle } from '../shared/filename';
+import { createPdfFilename } from '../shared/filename';
 import { parseSourceTabId } from '../shared/preview-url';
 import { requestConversion } from './conversion-client';
+import { resolveDownloadFilename, startDownload } from './downloader';
 import { PdfViewer } from './pdf-viewer';
 import './styles.css';
 
@@ -143,28 +144,15 @@ async function navigate(page: number): Promise<void> {
 async function downloadPdf(saveAs: boolean): Promise<void> {
   if (busy || !documentBytes) return;
   const name = filename.value.trim() || createPdfFilename(documentTitle);
-  const safeName = sanitizeTitle(name.replace(/\.pdf$/i, '')) + '.pdf';
+  const safeName = resolveDownloadFilename(name, documentTitle);
   try {
     busy = true;
     updateControls();
     status.textContent = saveAs ? 'Abrindo diálogo de salvamento…' : 'Baixando PDF…';
-    const blob = new Blob([documentBytes], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    try {
-      const downloadId = await chrome.downloads.download({
-        url,
-        filename: safeName,
-        saveAs,
-        conflictAction: 'uniquify',
-      });
-      if (downloadId === undefined) {
-        status.textContent = 'O download foi cancelado ou bloqueado.';
-      } else {
-        status.textContent = saveAs ? 'Salvo com sucesso.' : 'Download iniciado.';
-      }
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+    const outcome = await startDownload({ bytes: documentBytes, filename: safeName, saveAs });
+    if (outcome.status === 'complete') status.textContent = 'PDF salvo com sucesso.';
+    else if (outcome.status === 'cancelled') status.textContent = 'O download foi cancelado.';
+    else status.textContent = `O download foi interrompido: ${outcome.reason}.`;
   } catch (error) {
     status.textContent = `Falha no download: ${error instanceof Error ? error.message : 'Erro desconhecido.'}`;
   } finally {
