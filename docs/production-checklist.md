@@ -15,6 +15,8 @@ npm run package
 3. **Carregar sem compactação** → selecione a pasta `dist` (não o `.zip`).
 4. Fixe o ícone na barra.
 
+> Para validar exatamente o que será publicado, descompacte `webtopdf-1.0.0.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
+
 ## Resultado esperado por etapa
 
 | # | Ação | Resultado esperado |
@@ -27,7 +29,7 @@ npm run package
 | 6 | Altere a orientação para Paisagem e clique em **Atualizar prévia** | Status mostra ajustes pendentes antes; o PDF muda de proporção depois |
 | 7 | Altere margens e escala | As alterações só entram no PDF após **Atualizar prévia** |
 | 8 | Marque **Cabeçalho e rodapé** e atualize | O PDF passa a exibir data e URL do cabeçalho/rodapé |
-| 9 | Clique em **Baixar PDF** | Arquivo salvo na pasta de downloads com o nome exibido, PDF válido e ab ranges |
+| 9 | Clique em **Baixar PDF** | Arquivo salvo na pasta de downloads com o nome exibido e PDF válido |
 | 10 | Clique em **Baixar PDF** de novo | Não sobrescreve: cria `nome (1).pdf` |
 | 11 | Edite **Nome do arquivo** e clique em **Baixar PDF** | Usa o nome informado, com extensão `.pdf` |
 | 12 | Clique em **Salvar como…** | Abre o diálogo nativo; confirme o nome pré-preenchido e o destino |

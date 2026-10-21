@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+const packageVersion = JSON.parse(await readFile(resolve('package.json'), 'utf8')).version;
+
 const ALLOWED_PERMISSIONS = new Set(['activeTab', 'debugger', 'storage', 'downloads']);
 const FORBIDDEN_KEYS = ['host_permissions', 'content_scripts', 'web_accessible_resources', 'externally_connectable', 'declarative_net_request', 'proxy', 'management', 'nativeMessaging'];
 const REQUIRED_CSP_DIRECTIVES = {
@@ -19,6 +21,10 @@ const manifest = JSON.parse(await readFile(target, 'utf8'));
 const problems = [];
 
 if (manifest.manifest_version !== 3) problems.push(`manifest_version deve ser 3, encontrado ${manifest.manifest_version}`);
+
+if (manifest.version !== packageVersion) {
+  problems.push(`Versão do manifesto (${manifest.version}) diferente da do pacote (${packageVersion})`);
+}
 
 const permissions = manifest.permissions ?? [];
 for (const permission of permissions) {

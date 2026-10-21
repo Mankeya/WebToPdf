@@ -41,6 +41,10 @@ jobs:
       - name: Empacotar a extensão
         run: npm run package
 
+      - name: Conferir a versão da tag
+        if: ${{ inputs.tag == '' }}
+        run: node -e "const v=require('./package.json').version; const t=process.env.GITHUB_REF_NAME.replace(/^v/,''); if(v!==t){console.error('A tag '+t+' nao corresponde a versao '+v);process.exit(1);}"
+
       - name: Publicar a release
         uses: softprops/action-gh-release@v2
         with:

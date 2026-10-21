@@ -2,6 +2,8 @@
 
 Extensão Chrome/Chromium para Windows: converter a aba atual em PDF, revisar a prévia em uma nova aba, ajustar a impressão e baixar o documento. Processamento local, sem backend, sem telemetria e sem acesso a servidores.
 
+Versão 1.0.0. Últimas mudanças em [CHANGELOG.md](CHANGELOG.md).
+
 ## Funcionalidades
 
 - Um clique no ícone abre a prévia da aba atual, já convertida.
@@ -22,9 +24,14 @@ Extensão Chrome/Chromium para Windows: converter a aba atual em PDF, revisar a 
 - `npm run build`: gerar a extensão em `dist/`.
 - `npm run package`: gerar `webtopdf-<versão>.zip` distribuível.
 - `npm run icons`: regerar os PNG a partir de `public/icons/icon.svg`.
+- `npm run verify:manifest`: conferir permissões, CSP e versão do manifesto.
 - `npm run check`: executar tipos, testes unitários e build.
 
-## Instalação local
+## Instalação
+
+**Usando a release:** baixe `webtopdf-<versão>.zip`, descompacte e carregue a pasta `webtopdf` em `chrome://extensions` → modo desenvolvedor → **Carregar sem compactação**.
+
+**Desenvolvimento local:**
 
 1. `npm ci && npm run build`.
 2. Em `chrome://extensions`, habilite o modo desenvolvedor.
