@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import { chromium, test as base, expect } from '@playwright/test';
 import type { Worker } from '@playwright/test';
 
-export const test = base.extend<{ extensionWorker: Worker; extensionId: string; fixtureUrl: string }>({
+export const test = base.extend<{ extensionWorker: Worker; extensionId: string; fixtureUrl: string; downloadDir: string }>({
   context: async ({ headless }, use) => {
     const profile = await mkdtemp(join(tmpdir(), 'webtopdf-conversion-'));
     const extensionPath = resolve('dist');
@@ -23,6 +23,14 @@ export const test = base.extend<{ extensionWorker: Worker; extensionId: string; 
       }
     } finally {
       await rm(profile, { recursive: true, force: true });
+    }
+  },
+  downloadDir: async ({}, use) => {
+    const directory = await mkdtemp(join(tmpdir(), 'webtopdf-downloads-'));
+    try {
+      await use(directory);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
     }
   },
   extensionWorker: async ({ context }, use) => {

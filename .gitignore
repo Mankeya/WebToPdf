@@ -6,6 +6,7 @@ playwright-report/
 test-results/
 *.tsbuildinfo
 *.log
+webtopdf-*.zip
 
 # Local credentials and environment
 .env

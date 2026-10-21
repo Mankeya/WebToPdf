@@ -1,41 +1,44 @@
-# Validação e próximos passos
+# Validação
 
-## Gate antes da conversão completa
+## Gate de conversão
 
-Em Chrome estável no Windows, sem flags especiais:
+1. Anexar `chrome.debugger` a uma página HTTP/HTTPS e executar `Page.printToPDF`.
+2. Confirmar PDF válido, texto selecionável e links.
+3. Desconectar o debugger em sucesso e em erro.
+4. Testar cancelamento pelo usuário, DevTools aberto, navegação e fechamento da aba original.
+5. Verificar permissões e políticas corporativas sem tentar contorná-las.
 
-1. Registrar versão do navegador e sistema.
-2. Anexar debugger a uma página HTTP/HTTPS de teste e executar `Page.printToPDF`.
-3. Confirmar PDF válido, texto selecionável e links; desconectar debugger em sucesso e erro.
-4. Testar aviso/cancelamento pelo usuário, DevTools aberto, navegação e fechamento da aba original.
-5. Verificar permissões/políticas corporativas sem tentar contorná-las.
+**Status: aprovado.** O gate roda em `tests/e2e/print-gate.spec.ts` (Chromium 156) e a conversão real foi exercitada no Chrome 155 estável pelo responsável, com a extensão carregada manualmente.
 
-Não considerar o gate aprovado por mocks ou somente pelo build. Se inviável, solicitar decisão ao responsável.
+## Automatizado
 
-## Scaffold
+- `npm run check`: tipos, 43 testes unitários e build Vite.
+- `npm run test:e2e`: 7 testes em Chromium 156 (Playwright 1.64.1, headless) com perfil temporário.
+  - impressão via debugger e liberação da conexão;
+  - prévia real com texto selecionável, links e navegação de páginas;
+  - ajustes aplicados somente ao pedir atualização e preferências lembradas;
+  - botões de download habilitados e nome padrão;
+  - download real com arquivo válido, nome preservado e sem sobrescrita;
+  - página incompatível e extensão carregando corretamente.
+- `npm run package`: gera `webtopdf-<versão>.zip` com manifesto, ícones, worker do PDF.js, cmaps e fontes.
 
-- `npm run check`: tipos, regras puras e geração de `dist/`.
-- `npx playwright install chromium` e `npm run test:e2e`: extensão carregada em perfil temporário, worker registrado e tela inicial acessível. Não valida conversão.
-- Inspecionar `dist/manifest.json` e as referências a assets empacotados.
-- Instalar `dist/` no Chrome e conferir abertura da prévia ao clicar no ícone.
+## Manual obrigatório
 
-## Produto completo (pendente)
+O Chrome 155 não aceita mais `--load-extension` na linha de comando; a extensão precisa ser carregada por `chrome://extensions` → **Carregar sem compactação**. Por isso os itens abaixo são verificados manualmente: [checklist de produção](production-checklist.md).
 
-- Artigo longo, imagens e tabela com fixtures locais, sem dados corporativos.
-- Comparar visualização e PDF baixado após cada ajuste aplicado.
-- Preferências após reinício; download normal e Salvar como; colisões de nome.
-- Original fechada antes/depois da geração; preview recarregado; cliques repetidos.
-- Documento extenso, limites de memória e limpeza de recursos.
+- Aviso de depuração do Chrome durante a conversão e seu cancelamento.
+- Diálogo nativo **Salvar como…** com o nome pré-preenchido.
+- Política corporativa que bloqueie a extensão, a permissão `debugger` ou a impressão em PDF.
+- Comportamento com a pasta de downloads redirecionada (OneDrive) ou com permissões do Windows.
+- Fidelidade visual em artigo longo, página com imagens e relatório com tabela.
 
-Diálogos nativos, avisos de debugger, políticas e Chrome Windows exigem validação manual. Playwright/Chromium não substitui esses testes.
+## Limites definidos por implementação
 
-## Resultado desta etapa — estrutura inicial
+- 32 MB por PDF e 60 segundos por conversão, ambos com mensagem explícita.
+- Conversões concorrentes da mesma aba são recusadas.
+- Colisão de nome detectada pelo histórico de downloads do Chrome; arquivos baixados fora dele não são detectados.
 
-- Ambiente executado: Windows, Node.js 26.10.0 e npm 11.19.1.
-- `npm install`: concluído; auditoria automática reportou zero vulnerabilidades naquele momento.
-- `npm run check`: aprovado (checagem de tipos, 35 testes unitários e build Vite).
-- `npm run test:e2e`: aprovado (1 smoke test em Chromium 156 / Playwright 1.64.1, headless).
-- Manifesto e assets gerados em `dist/` conferidos; service worker MV3 carregado no smoke test.
-- O smoke test abre a página da extensão e verifica listener da ação, padrões, estado desabilitado e mensagem de página incompatível. Não simula clique real na barra do Chrome.
-- Instalação manual no Chrome estável, conversão real e gate de debugger ainda **não executados**.
-- CI remoto, branch principal e regras de proteção não foram configurados nesta etapa.
+## Ainda não configurado
+
+- CI remoto e branch principal com regras de proteção.
+- Publicação na Chrome Web Store.
