@@ -26,3 +26,6 @@ Thumbs.db
 .agents/
 opencode.json
 skills-lock.json
+scripts/github-api.mjs
+scripts/open-pr.mjs
+scripts/tmp-*.mjs
