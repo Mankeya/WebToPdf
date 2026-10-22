@@ -42,9 +42,13 @@ export const test = base.extend<{ extensionWorker: Worker; extensionId: string; 
   },
   fixtureUrl: async ({}, use) => {
     const html = await readFile(resolve('tests/fixtures/report.html'));
-    const server = createServer((_request, response) => {
+    const darkHtml = await readFile(resolve('tests/fixtures/dark-page.html'));
+    const systemDarkHtml = await readFile(resolve('tests/fixtures/system-dark.html'));
+    const server = createServer((request, response) => {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      response.end(html);
+      if (request.url === '/dark-page.html') response.end(darkHtml);
+      else if (request.url === '/system-dark.html') response.end(systemDarkHtml);
+      else response.end(html);
     });
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     try {

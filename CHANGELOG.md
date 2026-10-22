@@ -2,6 +2,13 @@
 
 Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não publicado]
+
+### Corrigido
+
+- **Páginas em modo escuro saíam em branco**: a impressão do Chromium força a mídia `print`, o que aplica as folhas de estilo de impressão do próprio site — e sites escuros costumam pintar tudo de branco nessa mídia. A conversão agora emula a mídia `screen`, preservando exatamente o que está na tela, sem tocar no DOM da página. A emulação é restaurada logo após a impressão, inclusive em erro ou cancelamento.
+- O esquema de cor do sistema (`prefers-color-scheme`) também é preservado, para páginas que escurecem por preferência e não por cor fixa.
+
 ## [1.1.0] — 2026-10-22
 
 ### Adicionado
