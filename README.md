@@ -1,78 +1,166 @@
-# WEBtoPDF
+<p align="center">
+  <img src="public/icons/icon-128.png" alt="WEBtoPDF" width="96" height="96">
+</p>
 
-Extensão Chrome/Chromium para Windows: converter a aba atual em PDF, revisar a prévia em uma nova aba, ajustar a impressão e baixar o documento. Processamento local, sem backend, sem telemetria e sem acesso a servidores.
+<h1 align="center">WEBtoPDF</h1>
 
-Versão 1.0.0. Últimas mudanças em [CHANGELOG.md](CHANGELOG.md).
+<p align="center">
+  Converte a aba que você está vendo em PDF, com prévia antes de salvar.<br>
+  Tudo acontece no seu computador — nada é enviado para servidores.
+</p>
 
-## Funcionalidades
+<p align="center">
+  <a href="#instalação">Instalar</a> •
+  <a href="#como-usar">Como usar</a> •
+  <a href="#recursos">Recursos</a> •
+  <a href="#privacidade">Privacidade</a> •
+  <a href="#desenvolvimento">Desenvolvimento</a>
+</p>
 
-- Um clique no ícone abre a prévia da aba atual, já convertida.
-- Prévia paginada com texto selecionável, links clicáveis, navegação e zoom.
-- Ajustes de papel, orientação, margens, escala, fundos e cabeçalho/rodapé aplicados ao clicar em **Atualizar prévia**.
-- **Baixar PDF** na pasta de downloads do navegador e **Salvar como…** com o diálogo nativo.
-- Nome padrão `Título - AAAA-MM-DD_HH-mm-ss.pdf`, sanitizado e sem sobrescrever arquivos existentes.
-- Preferências de impressão lembradas entre sessões.
+<p align="center">
+  <img src="store/screenshots/01-previa.png" alt="Prévia do PDF no WEBtoPDF" width="840">
+</p>
 
-## Ambiente de desenvolvimento
+---
 
-- Node.js 22.12+, 24.x ou 26+ (conforme `engines` do pacote), npm e Chrome estável no Windows.
-- `npm ci`: instalar as dependências fixadas no lockfile.
-- `npm run dev`: gerar a extensão continuamente em `dist/`.
-- `npm run typecheck`: verificar tipos.
-- `npm test`: executar testes unitários.
-- `npm run test:e2e`: validar a extensão em Chromium com Playwright (requer `npx playwright install chromium`).
-- `npm run build`: gerar a extensão em `dist/`.
-- `npm run package`: gerar `webtopdf-<versão>.zip` distribuível.
-- `npm run icons`: regerar os PNG a partir de `public/icons/icon.svg`.
-- `npm run store:screenshots`: gerar as capturas para a Chrome Web Store.
-- `npm run verify:manifest`: conferir permissões, CSP e versão do manifesto.
-- `npm run verify:workspace`: conferir que não há artefatos de build na raiz do repositório.
-- `npm run check`: executar tipos, testes unitários e build.
+## O que é
+
+Um clique no ícone do WEBtoPDF abre a prévia da página atual, **já convertida em PDF**. Você revisa o resultado, ajusta a impressão e só então salva o arquivo.
+
+O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **texto selecionável** e **links clicáveis**, respeitando o layout de impressão do site.
+
+## Recursos
+
+| Recurso | Detalhe |
+|---|---|
+| **Prévia imediata** | A aba atual já aparece convertida ao abrir a tela |
+| **Página por página** | Navegação, campo de página e zoom de 50% a 200% |
+| **Texto e links** | Camada de texto selecionável e links clicáveis |
+| **Ajustes de impressão** | Papel (A4 ou Carta), orientação, margens, escala, fundos e cabeçalho/rodapé |
+| **Atualização sob demanda** | As alterações só entram no PDF ao clicar em **Atualizar prévia** |
+| **Nome automático** | `Título da página - AAAA-MM-DD_HH-mm-ss.pdf`, sanitizado para o Windows |
+| **Nunca sobrescreve** | Nomes repetidos recebem sufixo, como `relatório (1).pdf` |
+| **Duas formas de salvar** | **Baixar PDF** na pasta do navegador e **Salvar como…** com o diálogo nativo |
+| **Preferências lembradas** | Suas últimas opções de impressão sobrevivem ao reinício do navegador |
+| **Interface em português** | Toda a extensão, do botão ao mensaje de erro |
 
 ## Instalação
 
-**Usando a release:** baixe `webtopdf-<versão>.zip`, descompacte e carregue a pasta `webtopdf` em `chrome://extensions` → modo desenvolvedor → **Carregar sem compactação**.
+> Requisito: **Chrome 116 ou superior**, no Windows.
 
-**Desenvolvimento local:**
+1. Baixe o pacote da [página de releases](https://github.com/Mankeya/WebToPdf/releases).
+2. Descompacte o `.zip`.
+3. Abra `chrome://extensions`, ative o **Modo do desenvolvedor** e escolha **Carregar sem compactação**.
+4. Selecione a pasta `webtopdf` extraída e fixe o ícone na barra de extensões.
 
-1. `npm ci && npm run build`.
-2. Em `chrome://extensions`, habilite o modo desenvolvedor.
-3. **Carregar sem compactação** e selecione a pasta `dist` (não o `.zip`).
-4. Após rebuilds, use **Recarregar** na página de extensões.
+Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O material da publicação está em [`store/`](store/listing.md) e o guia de distribuição em [`docs/distribution.md`](docs/distribution.md).
 
-O Chrome 155 não aceita mais `--load-extension` na linha de comando, então testes automatizados usam o Chromium empacotado do Playwright. A validação no Chrome instalado é manual: veja [o checklist de produção](docs/production-checklist.md).
+## Como usar
 
-## Estrutura
+1. Abra qualquer página HTTP ou HTTPS.
+2. Clique no ícone **WEBtoPDF**.
+3. Uma nova aba abre com a prévia do PDF.
+4. Ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser.
+5. Clique em **Baixar PDF** ou **Salvar como…**.
+
+A aba original precisa continuar aberta enquanto você ajusta e regenera o documento. Se ela for fechada, a prévia já pronta continua disponível para download.
+
+## Privacidade
+
+O WEBtoPDF **não envia nada para fora do seu computador**.
+
+- Sem servidores, sem conta, sem telemetria, sem publicidade, sem análise de uso.
+- A extensão **não injeta scripts** nas páginas e **não lê o conteúdo** dos sites: a conversão usa o motor de impressão do Chrome, que já trata a página como conteúdo confiável.
+- Sem acesso a cookies, histórico de navegação ou lista de permissões de sites.
+- Os únicos dados guardados são as suas **preferências de impressão**, no perfil local do navegador.
+- O PDF fica **apenas na memória** da aba da prévia e é descartado ao fechar ou recarregar a aba.
+
+A extensão pede quatro permissões, todas com uso restrito e verificável:
+
+| Permissão | Para quê |
+|---|---|
+| `activeTab` | Ler o título da aba para nomear o arquivo |
+| `debugger` | Usar o motor de impressão do Chrome (`Page.printToPDF`) |
+| `storage` | Lembrar as preferências de impressão |
+| `downloads` | Gravar o PDF e evitar sobrescrita de arquivos |
+
+Detalhes completos em [`docs/security.md`](docs/security.md) e [`SECURITY.md`](SECURITY.md).
+
+## Limitações conhecidas
+
+- O Chrome exibe um aviso temporário ao iniciar a impressão; ele desaparece quando a conversão termina.
+- O DevTools aberto na aba original pode interromper a conversão.
+- O layout de impressão do site pode diferir do que você vê na tela.
+- Conteúdo que ainda não carregou por rolagem pode não aparecer.
+- Documentos acima de **32 MB** ou conversões acima de **60 segundos** são recusados com mensagem clara.
+- A detecção de nomes repetidos usa o histórico de downloads do Chrome; arquivos baixados por outros meios não são detectados. Use **Salvar como…** quando precisar de garantia.
+
+## Desenvolvimento
+
+```bash
+npm ci            # instala as dependências fixadas no lockfile
+npm run dev       # gera a extensão continuamente em dist/
+npm run check     # tipos, testes unitários e build
+npm run test:e2e  # testes de fluxo real em Chromium
+```
+
+| Script | O que faz |
+|---|---|
+| `npm run dev` | Build contínuo em `dist/` |
+| `npm run build` | Gera a extensão em `dist/` |
+| `npm run package` | Gera `webtopdf-<versão>.zip` |
+| `npm run test` | Testes unitários (Vitest) |
+| `npm run test:e2e` | Testes de ponta a ponta com a extensão real (Playwright) |
+| `npm run typecheck` | Verificação de tipos |
+| `npm run icons` | Regenera os ícones a partir da marca |
+| `npm run store:screenshots` | Gera as capturas para a Chrome Web Store |
+| `npm run verify:manifest` | Confere permissões, CSP e versão do manifesto |
+| `npm run verify:workspace` | Garante que não há artefatos órfãos na raiz |
+
+### Estrutura
 
 ```text
-src/background/     Orquestração da ação e conversão via chrome.debugger
+src/background/     Ação da extensão e conversão via chrome.debugger
 src/preview/        Prévia, ajustes, download e visualização com PDF.js
 src/shared/         Configurações, nomes de arquivo e contratos
-public/             Manifesto MV3 e ícones
-scripts/            Geração de ícones e empacotamento
+public/             Manifesto MV3, ícones e marca
+scripts/            Ícones, empacotamento, capturas e verificações
 tests/unit/         Testes de regras puras
-tests/e2e/          Testes de fluxo real em Chromium
+tests/e2e/          Testes de fluxo real
 docs/               Especificação, arquitetura, segurança e validação
 ```
 
-## Segurança e limitações
+### Documentação
 
-A extensão não injeta scripts nas páginas, não usa `host_permissions` e não expõe recursos a sites. Toda a biblioteca PDF é empacotada localmente, sem CDN em tempo de execução. Detalhes em [docs/security.md](docs/security.md).
+| Documento | Conteúdo |
+|---|---|
+| [`docs/specification.md`](docs/specification.md) | Escopo aprovado e critérios de aceitação |
+| [`docs/architecture.md`](docs/architecture.md) | Decisões técnicas e Trade-offs |
+| [`docs/security.md`](docs/security.md) | Permissões, CSP, riscos residuais |
+| [`docs/validation.md`](docs/validation.md) | O que é validado e como |
+| [`docs/production-checklist.md`](docs/production-checklist.md) | Checklist manual de aceitação |
+| [`docs/distribution.md`](docs/distribution.md) | Caminhos de distribuição |
+| [`CHANGELOG.md`](CHANGELOG.md) | Histórico de versões |
 
-Limitações conhecidas:
+## Contribuição
 
-- A permissão `debugger` pode gerar um aviso temporário do Chrome e é bloqueada por algumas políticas corporativas.
-- DevTools aberto na aba original pode interromper a conversão.
-- A verificação de colisão de nome usa o histórico de downloads do Chrome; arquivos baixados por fora dele não são detectados. Use **Salvar como…** quando precisar de garantia.
-- O layout de impressão do site pode diferir do exibido na tela. Conteúdo ainda não carregado por rolagem pode faltar.
-- Limite inicial de 32 MB por PDF e 60 segundos por conversão.
+Branches curtas, commits convencionais e integração por PR. A branch principal é protegida: toda mudança passa pelos checks de integração contínua.
 
-Consulte [a especificação](docs/specification.md), [a arquitetura](docs/architecture.md), [a segurança](docs/security.md), [a validação](docs/validation.md), [o checklist de produção](docs/production-checklist.md) e [a distribuição](docs/distribution.md).
+```bash
+git switch -c feat/minha-mudanca
+# ... código, testes e documentação
+git commit -m "feat: descrição da mudança"
+git push -u origin feat/minha-mudanca
+```
 
-## Git e integração contínua
+Abra o PR pelo link exibido após o push. O modelo de pull request está em [`.github/pull_request_template.md`](.github/pull_request_template.md).
 
-- `main` é a branch principal e está **protegida**: push direto é recusado e toda mudança entra por PR.
-- Checks obrigatórios em `main`: `Tipos, testes unitários e build`, `Testes de fluxo em Chromium` e `Auditoria de dependências e manifesto`. O PR só pode ser integrado com os três verdes e a branch atualizada.
-- Force-push, exclusão de branch, histórico não linear e conversas não resolvidas são bloqueados.
-- `npm run package` gera o `.zip` distribuível; tags `v*` publicam a release com o pacote anexado.
-- Trabalho em branches curtas e commits convencionais. Dados de autoria são configuração local do Git, não arquivos do produto.
+## Licença
+
+Este repositório ainda não tem uma licença definida. A escolha é do responsável pelo projeto e precisa ser tomada antes de qualquer distribuição pública.
+
+---
+
+<p align="center">
+  Feito com o motor de impressão do Chrome. <strong>Processamento 100% local.</strong>
+</p>

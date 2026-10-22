@@ -26,7 +26,7 @@ test('carrega a extensão MV3 e a tela de prévia abre corretamente', async () =
       page.on('pageerror', (error) => errors.push(error.message));
 
       await page.goto(`chrome-extension://${extensionId}/preview.html?error=unsupported-page`);
-      await expect(page.getByRole('heading', { name: 'WEBtoPDF', exact: true })).toBeVisible();
+      await expect(page.getByRole('img', { name: 'WEBtoPDF' })).toBeVisible();
       await expect(page.getByRole('status')).toContainText('Página não compatível');
       await expect(page.getByLabel('Papel', { exact: true })).toHaveValue('A4');
       await expect(page.getByLabel('Margens (mm)', { exact: true })).toHaveValue('10');
