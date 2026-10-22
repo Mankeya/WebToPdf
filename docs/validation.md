@@ -12,13 +12,14 @@
 
 ## Automatizado
 
-- `npm run check`: tipos, 43 testes unitários e build Vite.
-- `npm run test:e2e`: 7 testes em Chromium 156 (Playwright 1.64.1, headless) com perfil temporário.
+- `npm run check`: tipos, 64 testes unitários e build Vite.
+- `npm run test:e2e`: 10 testes em Chromium 156 (Playwright 1.64.1, headless) com perfil temporário.
   - impressão via debugger e liberação da conexão;
   - prévia real com texto selecionável, links e navegação de páginas;
   - ajustes aplicados somente ao pedir atualização e preferências lembradas;
   - botões de download habilitados e nome padrão;
   - download real com arquivo válido, nome preservado e sem sobrescrita;
+  - tamanhos de papel, orientação, página inteira e papel personalizado;
   - página incompatível e extensão carregando corretamente.
 - `npm run package`: gera `webtopdf-<versão>.zip` com manifesto, ícones, worker do PDF.js, cmaps e fontes.
 

@@ -6,6 +6,28 @@ import { convertTabToPdf } from './converter';
 
 const activeTabs = new Set<number>();
 
+/**
+ * Nomes sugeridos para os downloads iniciados pela tela de prévia.
+ *
+ * O Chrome ignora a opção `filename` da API de downloads para URLs blob: e
+ * substitui pelo UUID da origem. O evento `onDeterminingFilename` é o
+ * mecanismo previsto para corrigir o nome, e o Chrome permite um único
+ * ouvinte por extensão, registrado no service worker.
+ */
+const reservedFilenames = new Map<string, string>();
+/** Teto de reservas guardadas, para que uma origem sem consumo não acumule. */
+const MAX_RESERVED_FILENAMES = 20;
+
+chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
+  const reserved = reservedFilenames.get(item.url);
+  if (reserved) {
+    reservedFilenames.delete(item.url);
+    suggest({ filename: reserved, conflictAction: 'uniquify' });
+    return;
+  }
+  suggest();
+});
+
 chrome.action.onClicked.addListener((tab) => {
   const url = buildPreviewUrl(chrome.runtime.getURL('preview.html'), tab.id, tab.url);
   void chrome.tabs.create({ url }).catch(() => {
@@ -64,7 +86,7 @@ chrome.runtime.onConnect.addListener((port) => {
     }
     activeTabs.add(tabId);
     const timeout = setTimeout(() => controller.abort(new ConversionError('A conversão excedeu 60 segundos. Tente novamente com uma página menor.')), CONVERSION_TIMEOUT_MS);
-    void convertTabToPdf(tabId, settings, (data) => send({ type: 'chunk', data }), controller.signal)
+    void convertTabToPdf(tabId, settings, (data, byteLength) => send({ type: 'chunk', data, byteLength }), controller.signal)
       .then((result) => send({ type: 'complete', ...result }))
       .catch((error: unknown) => {
         const reason: unknown = controller.signal.aborted ? controller.signal.reason : error;
@@ -75,4 +97,22 @@ chrome.runtime.onConnect.addListener((port) => {
         activeTabs.delete(tabId);
       });
   });
+});
+
+chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+  if (typeof message !== 'object' || message === null || !('type' in message)) return false;
+  if (message.type !== 'reserve-filename') return false;
+  if (sender?.id !== chrome.runtime.id) return false;
+  // Somente a tela de prévia, que é a origem legítima dos downloads.
+  if (!sender.url || !sender.url.startsWith(chrome.runtime.getURL('preview.html'))) return false;
+  if (!('url' in message) || typeof message.url !== 'string' || !message.url.startsWith('blob:')) return false;
+  if (!('filename' in message) || typeof message.filename !== 'string') return false;
+  if (message.filename.length === 0 || message.filename.length > 255) return false;
+  if (reservedFilenames.size >= MAX_RESERVED_FILENAMES) {
+    const oldest = reservedFilenames.keys().next();
+    if (!oldest.done) reservedFilenames.delete(oldest.value);
+  }
+  reservedFilenames.set(message.url, message.filename);
+  sendResponse({ ok: true });
+  return false;
 });

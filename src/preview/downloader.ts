@@ -82,11 +82,27 @@ async function waitForDownload(url: string, timeoutMs: number): Promise<Download
   return { status: 'cancelled' };
 }
 
+/**
+ * Reserva o nome do arquivo no service worker.
+ *
+ * Para URLs blob: o Chrome substitui o nome informado pelo UUID da origem.
+ * O evento `onDeterminingFilename` é o mecanismo previsto para restaurar o
+ * nome escolhido, e só o service worker pode registrá-lo.
+ */
+async function reserveFilename(url: string, filename: string): Promise<void> {
+  try {
+    await chrome.runtime.sendMessage({ type: 'reserve-filename', url, filename });
+  } catch {
+    // Sem reserva, o Chrome usa o nome gerado. O download continua válido.
+  }
+}
+
 export async function startDownload(request: DownloadRequest): Promise<DownloadOutcome> {
   const blob = new Blob([request.bytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
 
   if (request.saveAs) {
+    await reserveFilename(url, request.filename);
     try {
       // Com saveAs, o Chrome abre o diálogo nativo já preenchido com `filename`.
       const downloadId = await chrome.downloads.download({
@@ -123,6 +139,7 @@ export async function startDownload(request: DownloadRequest): Promise<DownloadO
     // O atributo download respeita o nome, mas sobrescreve arquivos existentes.
     // Por isso escolhemos um nome livre antes de disparar o download.
     const available = await pickAvailableFilename(request.filename);
+    await reserveFilename(url, available);
     triggerAnchorDownload(url, available);
     return await waitForDownload(url, 60_000);
   } finally {

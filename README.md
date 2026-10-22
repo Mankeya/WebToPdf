@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <sub>Versão 1.1.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.1.0">download</a></sub>
+</p>
+
+<p align="center">
   <a href="#instalação">Instalar</a> •
   <a href="#como-usar">Como usar</a> •
   <a href="#recursos">Recursos</a> •
