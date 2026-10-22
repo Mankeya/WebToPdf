@@ -3,9 +3,16 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { build } from 'vite';
 
 const run = promisify(execFile);
+const store = process.argv.includes('--store');
 const version = JSON.parse(await readFile(resolve('package.json'), 'utf8')).version;
+
+// O build enviado a loja nao e minificado: a revisao manual do Chrome Web
+// Store precisa conseguir ler o codigo da extensao.
+await build({ logLevel: 'warn', build: { minify: !store } });
+
 const staging = await mkdtemp(join(tmpdir(), 'webtopdf-package-'));
 const target = join(staging, 'webtopdf');
 
@@ -16,7 +23,8 @@ try {
     throw new Error(`Versão do manifesto (${manifest.version}) diferente da do pacote (${version}).`);
   }
 
-  const output = resolve(`webtopdf-${version}.zip`);
+  const name = store ? `webtopdf-store-${version}.zip` : `webtopdf-${version}.zip`;
+  const output = resolve(name);
   try {
     await run('powershell', [
       '-NoProfile',

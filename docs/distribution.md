@@ -13,7 +13,9 @@ Como tirar a extensão do modo desenvolvedor do Chrome, com as implicações de 
 
 ## Chrome Web Store — o caminho suportado
 
-Desde o Chrome 137, o comando `--load-extension` é ignorado pelo navegador instalado, e extensões distribuídas fora da loja exigem modo desenvolvedor. A Chrome Web Store passou a ser o caminho suportado para instalar sem modo desenvolvedor.
+Desde o Chrome 137, o comando `--load-extension` é ignorado pelo navegador instalado, e extensões distribuídas fora da loja exigem modo desenvolvedor. A documentação oficial é explícita: **no Windows e no macOS, a instalação externa só é permitida quando a URL de atualização aponta para a Chrome Web Store**. Instalação a partir de um CRX local é bloqueada desde o Chrome 33.
+
+Na prática, para sair do modo desenvolvedor no Windows, **é obrigatório publicar na Chrome Web Store**. O Linux é a única exceção: aceita extensão auto-hospedada ou CRX local.
 
 **Requisitos:**
 
@@ -26,8 +28,31 @@ Desde o Chrome 137, o comando `--load-extension` é ignorado pelo navegador inst
 **Riscos específicos desta extensão:**
 
 - O revisor precisa instalar e usar a extensão. As instruções de teste com URLs públicas estão prontas.
-- O build enviado é minificado, o que dificulta a leitura do código. Para facilitar a revisão, vale enviar um build sem minificação. O Vite permite isso com `build.minify: false` em um perfil de release.
+- O build enviado à loja **não é minificado**, para que a revisão manual consiga ler o código. O build das releases no GitHub continua minificado.
 - Novas extensões e extensões com permissões sensíveis demoram mais. A documentação oficial fala de alguns dias, podendo chegar a semanas.
+
+## Publicação automatizada
+
+Depois que a conta de desenvolvedor existir e o item for criado no painel, a publicação de novas versões pode ser automatizada pela API v2 da loja.
+
+```bash
+npm run package:store      # gera webtopdf-store-<versão>.zip sem minificação
+npm run publish:store     # envia o pacote e submete à revisão
+```
+
+**Credenciais** (nunca versionadas):
+
+| Segredo do repositório | Variável | Origem |
+|---|---|---|
+| `CWS_CLIENT_ID` | id do cliente OAuth | Google Cloud Console |
+| `CWS_CLIENT_SECRET` | segredo do cliente OAuth | Google Cloud Console |
+| `CWS_REFRESH_TOKEN` | token de atualização | OAuth Playground, escopo `https://www.googleapis.com/auth/chromewebstore` |
+| `CWS_PUBLISHER_ID` | id do publicador | Painel da loja → Publisher → Settings |
+| `CWS_EXTENSION_ID` | id do item | URL do item na loja |
+
+As três primeiras são **segredos** do repositório; as duas últimas são **variáveis** do repositório, porque não são confidenciais. O workflow [`.github/workflows/publish-store.yml`](../.github/workflows/publish-store.yml) roda a cada tag e é ignorado enquanto as variáveis não estiverem configuradas.
+
+O item precisa ter a listagem e as práticas de privacidade preenchidas no painel antes da primeira publicação pela API.
 
 ## Política corporativa
 
@@ -57,6 +82,6 @@ Isso **mantém o modo desenvolvedor** e exige intervir manualmente a cada atuali
 ## Ainda falta, para publicar
 
 1. Conta de desenvolvedor da Chrome Web Store (pagamento da taxa).
-2. Preencher o painel do painel do desenvolvedor com o material acima.
-3. Enviar o `.zip` e responder à revisão.
-4. Decidir entre publicar a extensão inteira ou uma versão apenas para a loja com permissões reduzidas.
+2. Preencher o painel do desenvolvedor com o material acima e criar o item.
+3. Configurar as credenciais no repositório para a publicação automatizada.
+4. Enviar a primeira versão e responder à revisão.

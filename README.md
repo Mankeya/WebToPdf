@@ -109,10 +109,13 @@ npm run test:e2e  # testes de fluxo real em Chromium
 | `npm run dev` | Build contínuo em `dist/` |
 | `npm run build` | Gera a extensão em `dist/` |
 | `npm run package` | Gera `webtopdf-<versão>.zip` |
+| `npm run package:store` | Gera o pacote sem minificação, para a Chrome Web Store |
+| `npm run publish:store` | Envia o pacote à loja e submete à revisão |
 | `npm run test` | Testes unitários (Vitest) |
 | `npm run test:e2e` | Testes de ponta a ponta com a extensão real (Playwright) |
 | `npm run typecheck` | Verificação de tipos |
 | `npm run icons` | Regenera os ícones a partir da marca |
+| `npm run brand:extract` | Extrai as peças de marca da folha oficial |
 | `npm run store:screenshots` | Gera as capturas para a Chrome Web Store |
 | `npm run verify:manifest` | Confere permissões, CSP e versão do manifesto |
 | `npm run verify:workspace` | Garante que não há artefatos órfãos na raiz |
