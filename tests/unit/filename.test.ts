@@ -21,6 +21,18 @@ describe('sanitizeTitle', () => {
   it('remove pontos finais e normaliza Unicode', () => {
     expect(sanitizeTitle('Cafe\u0301... ')).toBe('Café');
   });
+
+  it('impede que o nome vire um caminho relativo', () => {
+    expect(sanitizeTitle('../../etc/passwd')).toBe('etc passwd');
+    expect(sanitizeTitle('..')).toBe('pagina');
+    expect(sanitizeTitle('../..')).toBe('pagina');
+    expect(sanitizeTitle('relatorio..final')).toBe('relatorio final');
+    expect(sanitizeTitle('...')).toBe('pagina');
+  });
+
+  it('mantém um ponto simples no meio do nome', () => {
+    expect(sanitizeTitle('relatorio.final.pdf')).toBe('relatorio.final.pdf');
+  });
 });
 
 describe('createPdfFilename', () => {

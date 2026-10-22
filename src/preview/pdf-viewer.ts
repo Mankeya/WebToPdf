@@ -11,6 +11,8 @@ export class PdfViewer {
   private renderTask: RenderTask | null = null;
   private textLayer: TextLayer | null = null;
   private disposed = false;
+  /** Serializa as construções de página, para que uma não sobreponha a outra. */
+  private queue: Promise<unknown> = Promise.resolve();
   pageNumber = 1;
   zoom = 1;
 
@@ -65,7 +67,20 @@ export class PdfViewer {
     TextLayer.cleanup();
   }
 
+  /**
+   * Executa as construções uma a uma. Uma renderização em andamento é
+   * cancelada antes da próxima começar, para não deixar tarefas pendentes
+   * segurando memória do documento anterior.
+   */
   private async buildPage(document: PDFDocumentProxy, pageNumber: number): Promise<HTMLElement> {
+    const run = this.queue.then(() => this.renderPage(document, pageNumber));
+    this.queue = run.catch(() => undefined);
+    return run;
+  }
+
+  private async renderPage(document: PDFDocumentProxy, pageNumber: number): Promise<HTMLElement> {
+    this.renderTask?.cancel();
+    this.textLayer?.cancel();
     const page = await document.getPage(pageNumber);
     const viewport = page.getViewport({ scale: this.zoom * 96 / 72 });
     const stage = window.document.createElement('div');

@@ -2,17 +2,26 @@
 
 Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não publicado]
+## [1.1.0] — 2026-10-22
 
 ### Adicionado
 
 - **Página inteira**: uma única folha contínua com a altura medida do conteúdo real da página.
 - **Tamanhos de papel**: A3, A5, Legal, Tabloid e papel personalizado com largura e altura em milímetros, além de A4 e Carta.
 - **Redesenho da interface** com a identidade oficial: cabeçalho navy com a marca, vermelho da marca nos elementos de ação, seletor de papel com a proporção real de cada formato, orientação em controle segmentado, margens e escala em sliders e interruptores para fundos e cabeçalho/rodapé.
+- O nome do arquivo é reservado no service worker, para que o diálogo **Salvar como…** receba o nome escolhido em vez do UUID interno.
 
 ### Corrigido
 
 - A orientação era aplicada duas vezes: as dimensões do papel já vinham trocadas e o Chrome também trocava por conta do parâmetro `landscape`. O resultado em paisagem saía em retrato.
+- A barra lateral de ajustes não ocupava a coluna reservada, porque o Chrome não estica automaticamente um item de grade com `position: sticky`. Os controles ficavam fora das caixas.
+- O tamanho dos trechos do PDF era calculado decodificando Base64 e jogando o resultado fora. Agora é calculado por aritmética, e o PDF é decodificado uma única vez.
+- Cada trecho recebido é conferido contra o tamanho declarado, e a montagem do documento serializa as renderizações para não deixar tarefas pendentes segurando memória.
+
+### Segurança
+
+- Sequências de pontos no nome do arquivo viram espaço, para que um nome como `../../etc/passwd` nunca seja lido como caminho relativo.
+- A reserva de nome do download é limitada a 20 entradas e só aceita requisição da própria tela de prévia.
 
 ## [1.0.0] — 2026-10-21
 

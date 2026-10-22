@@ -1,4 +1,4 @@
-import { ConversionError, MAX_PDF_BYTES } from '../shared/conversion';
+import { ConversionError, MAX_PDF_BYTES, base64ByteLength } from '../shared/conversion';
 import { isSupportedPage } from '../shared/preview-url';
 import { resolvePaperSize } from '../shared/settings';
 import type { PrintSettings } from '../shared/settings';
@@ -47,7 +47,7 @@ async function resolveFullPageSize(target: { tabId: number }): Promise<PaperRequ
 export async function convertTabToPdf(
   tabId: number,
   settings: PrintSettings,
-  onChunk: (base64: string) => void,
+  onChunk: (base64: string, byteLength: number) => void,
   signal: AbortSignal,
 ): Promise<{ title: string; byteLength: number }> {
   let tab: chrome.tabs.Tab;
@@ -135,10 +135,11 @@ export async function convertTabToPdf(
         throw new ConversionError('Não foi possível ler o PDF gerado.');
       }
       const base64 = 'base64Encoded' in chunk && chunk.base64Encoded === true ? chunk.data : btoa(chunk.data);
-      byteLength += atob(base64).length;
+      const chunkBytes = base64ByteLength(base64);
+      byteLength += chunkBytes;
       if (byteLength > MAX_PDF_BYTES) throw new ConversionError('O PDF excedeu o limite inicial de 32 MB. Tente uma página menor.');
       signal.throwIfAborted();
-      if (base64) onChunk(base64);
+      if (base64) onChunk(base64, chunkBytes);
       eof = 'eof' in chunk && chunk.eof === true;
     }
     if (byteLength === 0) throw new ConversionError('O PDF gerado está vazio.');

@@ -91,13 +91,17 @@ button, input, select { font: inherit; color: inherit; }
 
 .layout {
   display: grid;
-  grid-template-columns: 336px minmax(0, 1fr);
+  grid-template-columns: 360px minmax(0, 1fr);
   min-height: calc(100vh - 72px);
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
+  /* O Chrome não estica automaticamente um item de grade com position: sticky,
+     então a largura é fixada para a coluna. */
+  width: 100%;
+  min-width: 0;
   border-right: 1px solid var(--navy-100);
   background: var(--surface-sunken);
   position: sticky;
@@ -582,6 +586,7 @@ input[type="range"]:disabled { opacity: 0.45; }
 
   .sidebar {
     position: static;
+    width: 100%;
     height: auto;
     border-right: 0;
     border-bottom: 1px solid var(--navy-100);

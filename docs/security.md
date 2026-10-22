@@ -43,12 +43,33 @@ O PDF.js foi verificado: as versões empacotadas (`pdf.mjs` e `pdf.worker.min.mj
 |---|---|
 | Página maliciosa enviar comandos à extensão | A porta só aceita conexões da própria página `preview.html`; `sourceTabId` e configurações são validados no service worker |
 | Conversão de aba arbitrária | A porta rejeita `sourceTabId` ausente, inválido ou igual à própria aba da prévia |
-| Nome de arquivo malicioso | `sanitizeTitle` remove caracteres inválidos do Windows, caracteres de controle e nomes reservados (`CON`, `NUL`, `COM1`…) |
+| Nome de arquivo malicioso | `sanitizeTitle` remove caracteres inválidos do Windows, caracteres de controle, sequências de pontos e nomes reservados (`CON`, `NUL`, `COM1`…) |
+| Nome virando caminho relativo | Um nome como `../../etc/passwd` perde as barras e os pontos duplos, virando `etc passwd` |
 | Sobrescrita de arquivo | O nome livre é escolhido consultando o histórico de downloads antes de gravar |
 | Vazamento de dados | Nenhum log de URL, título, conteúdo ou PDF; PDFs ficam apenas em memória na aba da prévia |
 | Uso da debugger fora do escopo | A conexão é anexada apenas durante a impressão e liberada em `finally`, inclusive em erro ou cancelamento |
-| Injeção via página original | O conteúdo da página nunca é interpretado pela extensão; a URL exibida em links do PDF é validada para `http`/`https` |
+| Injeção via página original | O conteúdo da página nunca é interpretado pela extensão; o DOM é construído sem `innerHTML` e a URL exibida em links do PDF é validada para `http`/`https` |
 | Downloads interrompidos | O resultado distingue `complete`, `interrupted` e `cancelled`, com mensagem ao usuário |
+| PDF adulterado no caminho | Cada trecho declara o tamanho e o cliente confere o tamanho real, além de validar a assinatura `%PDF-` |
+| Nome reservado em excesso | A reserva de nome do download é limitada a 20 entradas e só aceita requisição da própria tela de prévia |
+
+## Geração de arquivos
+
+O arquivo é montado inteiramente no navegador e entregue ao gerenciador de
+downloads do Chrome. Nenhum byte do PDF sai do perfil do navegador.
+
+- **Nome**: vem do campo de texto ou do título da página, passa por
+  `sanitizeTitle` e recebe a extensão `.pdf`. Nomes repetidos recebem sufixo
+  numérico, calculado a partir do histórico de downloads.
+- **Conteúdo**: o PDF gerado pelo motor de impressão é lido em trechos de
+  256 KB, conferido e montado em memória. Nada é gravado em disco além do
+  arquivo final escolhido pelo usuário.
+- **Blob**: a URL temporária que entrega o PDF ao Chrome é revogada assim que
+  o download termina, e não antes, para não truncar o arquivo.
+- **Link do PDF**: apenas `http` e `https`, com `rel="noopener noreferrer"`.
+- **Memória**: o limite de 32 MB por PDF significa, no pico, o documento em
+  memória, a cópia usada pela visualização e o blob do download. Documentos
+  maiores devem ser divididos pelo usuário.
 
 ## Dados sensíveis
 
