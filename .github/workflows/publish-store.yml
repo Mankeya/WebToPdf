@@ -1,0 +1,67 @@
+name: Publicar na Chrome Web Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag cuja versão sera publicada (ex.: v1.0.0)'
+        required: true
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Enviar para revisao da loja
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Sem credenciais configuradas, o job e ignorado em vez de falhar.
+    if: ${{ vars.CWS_PUBLISHER_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Instalar o Chromium do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes e build
+        run: npm run check
+
+      - name: Testes de ponta a ponta
+        run: npm run test:e2e
+
+      - name: Conferir o manifesto gerado
+        run: node scripts/verify-manifest.mjs
+
+      - name: Conferir a raiz do repositório
+        run: node scripts/check-workspace.mjs
+
+      - name: Empacotar sem minificação
+        run: npm run package:store
+
+      - name: Conferir a versão da tag
+        if: ${{ inputs.tag == '' }}
+        run: node -e "const v=require('./package.json').version; const t=process.env.GITHUB_REF_NAME.replace(/^v/,''); if(v!==t){console.error('A tag '+t+' nao corresponde a versao '+v);process.exit(1);}"
+
+      - name: Obter a versão
+        id: versao
+        run: echo "valor=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publicar na Chrome Web Store
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ vars.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
+        run: node scripts/publish-store.mjs webtopdf-store-${{ steps.versao.outputs.valor }}.zip
