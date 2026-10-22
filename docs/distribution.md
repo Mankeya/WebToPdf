@@ -31,6 +31,17 @@ Na prática, para sair do modo desenvolvedor no Windows, **é obrigatório publi
 - O build enviado à loja **não é minificado**, para que a revisão manual consiga ler o código. O build das releases no GitHub continua minificado.
 - Novas extensões e extensões com permissões sensíveis demoram mais. A documentação oficial fala de alguns dias, podendo chegar a semanas.
 
+## Release automática a cada merge
+
+Cada integração na `main` publica uma versão. O fluxo é este:
+
+1. **Antes do PR**, o autor roda `npm run release:prepare -- <major|minor|patch> -- "destaque"`. O script sobe a versão em `package.json` e no manifesto, fecha a seção `[Não publicado]` do CHANGELOG na data de hoje e reescreve a seção **Novidades** do README com as três versões mais recentes, usando só os destaques informados.
+2. **O CI** roda o quarto check obrigatório, **Release preparada** (`scripts/release-check.mjs`), que bloqueia o merge se a versão do PR não for maior que a da `main`, se o CHANGELOG não tiver a seção da versão ou se o README não anunciar a versão nova.
+3. **O merge** dispara `.github/workflows/release-on-merge.yml`, que lê a versão do `package.json` integrado, cria a tag `vX.Y.Z` (se ainda não existir) e chama o `release.yml` como workflow reutilizável — que roda testes, empacota o `.zip` e publica a release.
+4. **A Chrome Web Store** recebe a mesma tag pelo `publish-store.yml`, que continua ignorado enquanto as credenciais não estiverem configuradas.
+
+O `npm run release:check` usa o mesmo script do CI e pode ser rodado localmente com `--base origin/main` para simular o portão.
+
 ## Publicação automatizada
 
 Depois que a conta de desenvolvedor existir e o item for criado no painel, a publicação de novas versões pode ser automatizada pela API v2 da loja.

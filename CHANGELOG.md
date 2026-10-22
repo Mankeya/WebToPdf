@@ -4,6 +4,13 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.2.0] — 2026-10-22
+
+### Adicionado
+
+- **Release por merge**: cada integração na `main` prepara e publica automaticamente uma nova versão. O bump segue o commit convencional (`feat` → minor, `fix` → patch, mudança incompatível → major), o CI ganhou a checagem obrigatória **Release preparada** e o merge dispara a criação da tag e a publicação da release com o `.zip`.
+- Seção **Novidades** no README com as três versões mais recentes, escrita para o usuário final.
+
 ### Corrigido
 
 - **Páginas em modo escuro saíam em branco**: a impressão do Chromium força a mídia `print`, o que aplica as folhas de estilo de impressão do próprio site — e sites escuros costumam pintar tudo de branco nessa mídia. A conversão agora emula a mídia `screen`, preservando exatamente o que está na tela, sem tocar no DOM da página. A emulação é restaurada logo após a impressão, inclusive em erro ou cancelamento.

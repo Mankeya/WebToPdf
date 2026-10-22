@@ -84,6 +84,24 @@ After approval:
 
 
 
+\## Release per merge
+
+\- Every merge to main publishes a release.
+
+\- Before opening the PR, run `npm run release:prepare -- <major|minor|patch> -- "user facing highlight"`.
+
+\- The bump follows the Conventional Commit type: feat → minor, fix → patch, breaking → major.
+
+\- README highlights describe the change for the end user, never technical detail.
+
+\- The CI check "Release preparada" blocks merges without a prepared release.
+
+\- Merging creates the tag and publishes the release with the zip automatically.
+
+\- Run `npm run release:check -- --base origin/main` to validate before opening the PR.
+
+
+
 \## Corporate restrictions
 
 \- Do not access production without authorization.
