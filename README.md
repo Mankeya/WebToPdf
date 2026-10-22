@@ -36,7 +36,9 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 | **Prévia imediata** | A aba atual já aparece convertida ao abrir a tela |
 | **Página por página** | Navegação, campo de página e zoom de 50% a 200% |
 | **Texto e links** | Camada de texto selecionável e links clicáveis |
-| **Ajustes de impressão** | Papel (A4 ou Carta), orientação, margens, escala, fundos e cabeçalho/rodapé |
+| **Tamanhos de papel** | A4, A3, A5, Carta, Legal, Tabloid, sob medida e **página inteira** |
+| **Página inteira** | Uma única folha contínua com a altura do conteúdo, sem paginação |
+| **Ajustes de impressão** | Orientação, margens, escala, fundos e cabeçalho/rodapé |
 | **Atualização sob demanda** | As alterações só entram no PDF ao clicar em **Atualizar prévia** |
 | **Nome automático** | `Título da página - AAAA-MM-DD_HH-mm-ss.pdf`, sanitizado para o Windows |
 | **Nunca sobrescreve** | Nomes repetidos recebem sufixo, como `relatório (1).pdf` |
@@ -61,6 +63,8 @@ Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O
 2. Clique no ícone **WEBtoPDF**.
 3. Uma nova aba abre com a prévia do PDF.
 4. Ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser.
+
+Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo. Sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor.
 5. Clique em **Baixar PDF** ou **Salvar como…**.
 
 A aba original precisa continuar aberta enquanto você ajusta e regenera o documento. Se ela for fechada, a prévia já pronta continua disponível para download.

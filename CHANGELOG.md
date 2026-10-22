@@ -2,6 +2,18 @@
 
 Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o versionamento segue [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não publicado]
+
+### Adicionado
+
+- **Página inteira**: uma única folha contínua com a altura medida do conteúdo real da página.
+- **Tamanhos de papel**: A3, A5, Legal, Tabloid e papel personalizado com largura e altura em milímetros, além de A4 e Carta.
+- **Redesenho da interface** com a identidade oficial: cabeçalho navy com a marca, vermelho da marca nos elementos de ação, seletor de papel com a proporção real de cada formato, orientação em controle segmentado, margens e escala em sliders e interruptores para fundos e cabeçalho/rodapé.
+
+### Corrigido
+
+- A orientação era aplicada duas vezes: as dimensões do papel já vinham trocadas e o Chrome também trocava por conta do parâmetro `landscape`. O resultado em paisagem saía em retrato.
+
 ## [1.0.0] — 2026-10-21
 
 ### Adicionado

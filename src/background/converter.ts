@@ -1,6 +1,48 @@
 import { ConversionError, MAX_PDF_BYTES } from '../shared/conversion';
 import { isSupportedPage } from '../shared/preview-url';
+import { resolvePaperSize } from '../shared/settings';
 import type { PrintSettings } from '../shared/settings';
+
+const MM_PER_INCH = 25.4;
+const CSS_PX_PER_INCH = 96;
+/** Teto de 200 polegadas, o limite de leitura do formato PDF. */
+const MAX_FULL_PAGE_PX = 200 * CSS_PX_PER_INCH;
+
+interface PaperRequest {
+  widthInches: number;
+  heightInches: number;
+  marginInches: number;
+  scale: number;
+}
+
+/**
+ * Para "página inteira", a folha acompanha o tamanho do conteúdo da página.
+ * A medida vem do layout real, então uma página de 3 000 px de altura vira um
+ * PDF de uma única folha alta.
+ *
+ * O teto de 200 polegadas é o limite de leitura do formato PDF. Acima disso o
+ * conteúdo é paginado normalmente, o que preserva a leitura.
+ */
+async function resolveFullPageSize(target: { tabId: number }): Promise<PaperRequest> {
+  const metrics: unknown = await chrome.debugger.sendCommand(target, 'Page.getLayoutMetrics');
+  if (typeof metrics !== 'object' || metrics === null || !('cssContentSize' in metrics)) {
+    throw new ConversionError('Não foi possível medir o tamanho do conteúdo da página.');
+  }
+  const size: unknown = metrics.cssContentSize;
+  if (typeof size !== 'object' || size === null || !('width' in size) || !('height' in size)
+    || typeof size.width !== 'number' || typeof size.height !== 'number'
+    || !Number.isFinite(size.width) || !Number.isFinite(size.height)) {
+    throw new ConversionError('Não foi possível medir o tamanho do conteúdo da página.');
+  }
+  const widthPx = Math.max(size.width, 1);
+  const heightPx = Math.max(size.height, 1);
+  return {
+    widthInches: widthPx / CSS_PX_PER_INCH,
+    heightInches: Math.min(heightPx, MAX_FULL_PAGE_PX) / CSS_PX_PER_INCH,
+    marginInches: 0,
+    scale: 1,
+  };
+}
 
 export async function convertTabToPdf(
   tabId: number,
@@ -46,18 +88,35 @@ export async function convertTabToPdf(
       throw new ConversionError('Página não compatível. Use uma aba HTTP ou HTTPS.');
     }
     const title = 'title' in current && typeof current.title === 'string' ? current.title : 'pagina';
-    const mmPerInch = 25.4;
-    const paper = settings.paperSize === 'A4' ? { width: 210, height: 297 } : { width: 215.9, height: 279.4 };
-    const margin = settings.marginMm / mmPerInch;
+
+    let paper: PaperRequest;
+    let landscape: boolean;
+    if (settings.paperSize === 'FullPage') {
+      // A folha contínua acompanha o conteúdo: as medidas vêm do layout real e
+      // a orientação do papel não se aplica.
+      paper = await resolveFullPageSize(target);
+      landscape = false;
+    } else {
+      const dimensions = resolvePaperSize(settings);
+      paper = {
+        widthInches: dimensions.widthMm / MM_PER_INCH,
+        heightInches: dimensions.heightMm / MM_PER_INCH,
+        marginInches: settings.marginMm / MM_PER_INCH,
+        scale: settings.scale,
+      };
+      // O Chrome troca largura e altura do papel quando landscape é verdadeiro.
+      landscape = settings.orientation === 'landscape';
+    }
+
     const response: unknown = await chrome.debugger.sendCommand(target, 'Page.printToPDF', {
-      landscape: settings.orientation === 'landscape',
-      paperWidth: paper.width / mmPerInch,
-      paperHeight: paper.height / mmPerInch,
-      marginTop: margin,
-      marginBottom: margin,
-      marginLeft: margin,
-      marginRight: margin,
-      scale: settings.scale,
+      landscape,
+      paperWidth: paper.widthInches,
+      paperHeight: paper.heightInches,
+      marginTop: paper.marginInches,
+      marginBottom: paper.marginInches,
+      marginLeft: paper.marginInches,
+      marginRight: paper.marginInches,
+      scale: paper.scale,
       printBackground: settings.printBackground,
       displayHeaderFooter: settings.displayHeaderFooter,
       preferCSSPageSize: false,

@@ -28,9 +28,12 @@ test('carrega a extensão MV3 e a tela de prévia abre corretamente', async () =
       await page.goto(`chrome-extension://${extensionId}/preview.html?error=unsupported-page`);
       await expect(page.getByRole('img', { name: 'WEBtoPDF' })).toBeVisible();
       await expect(page.getByRole('status')).toContainText('Página não compatível');
-      await expect(page.getByLabel('Papel', { exact: true })).toHaveValue('A4');
-      await expect(page.getByLabel('Margens (mm)', { exact: true })).toHaveValue('10');
-      await expect(page.getByLabel('Incluir fundos')).toBeChecked();
+      await expect(page.getByRole('radio', { name: 'A4' })).toHaveAttribute('aria-checked', 'true');
+      await expect(page.getByRole('radio', { name: 'Retrato' })).toHaveAttribute('aria-checked', 'true');
+      await expect(page.getByLabel(/Margens/)).toHaveValue('10');
+      await expect(page.getByLabel(/Escala/)).toHaveValue('100');
+      await expect(page.getByLabel(/Incluir fundos/)).toBeChecked();
+      await expect(page.getByLabel(/Cabeçalho e rodapé/)).not.toBeChecked();
       await expect(page.getByRole('button', { name: 'Atualizar prévia' })).toBeDisabled();
       await expect(page.getByRole('button', { name: 'Baixar PDF' })).toBeDisabled();
       await expect(page.getByRole('button', { name: 'Salvar como…' })).toBeDisabled();

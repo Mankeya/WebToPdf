@@ -7,6 +7,9 @@ Aprovada explicitamente pelo responsável pelo projeto nesta conversa. Esta vers
 - Chrome/Chromium no Windows, inicialmente com instalação manual em modo desenvolvedor.
 - Um clique no ícone abre uma nova aba com processamento e prévia da aba HTTP/HTTPS original.
 - A própria tela contém tamanho do papel, orientação, margens, escala, fundos, cabeçalho/rodapé e nome do arquivo.
+- **Tamanhos de papel**: A4, A3, A5, Carta, Legal, Tabloid, personalizado (largura e altura em milímetros) e **página inteira**.
+- **Página inteira** gera uma única folha contínua cuja altura acompanha o conteúdo da página, medida pelo layout real. Margens, escala e orientação ficam fixas nesse modo. Acima de 200 polegadas, o conteúdo é paginado normalmente, o que preserva a leitura.
+- **Personalizado** aceita de 20 mm a 2000 mm em cada dimensão.
 - A primeira conversão é automática; ajustes só regeneram ao clicar em **Atualizar prévia**.
 - PDF paginado, texto selecionável e links quando preservados pelo motor de impressão. Layout de impressão do site, não captura de tela.
 - Padrões: A4, retrato, fundos habilitados e cabeçalho/rodapé desabilitado. Margens e escala usarão valores seguros documentados e validados.
@@ -31,6 +34,8 @@ Edição de texto/imagens, anotações, OCR, rolagem automática, conversão em 
 6. Liberar debugger em sucesso/falha e recursos PDF ao substituir/fechar a prévia.
 7. Validar artigo longo, página com imagens e relatório com tabela, usando exemplos não confidenciais.
 8. A extensão não envia conteúdo a serviços externos.
+9. Cada tamanho de papel produz a proporção correspondente, e a orientação troca largura e altura.
+10. Página inteira produz uma única folha contínua com a altura do conteúdo.
 
 ## Pendências técnicas (não requisitos presumidos)
 

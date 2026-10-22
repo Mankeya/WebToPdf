@@ -10,6 +10,29 @@
 6. **Preferências**: `chrome.storage.local`. Não persistir PDFs, histórico de URLs ou conteúdo das páginas.
 7. **Download**: nome resolvido por `sanitizeTitle`, com extensão `.pdf` garantida e nome livre escolhido antes de gravar.
 
+## Tamanho do papel e orientação
+
+O Chrome troca largura e altura do papel quando o parâmetro `landscape` da
+impressão é verdadeiro. Por isso as dimensões sempre seguem o padrão retrato e
+a troca acontece uma única vez, no motor de impressão. Trocar as dimensões no
+aplicativo e passar `landscape` ao mesmo tempo faria a orientação ser
+aplicada duas vezes e o resultado voltaria a retrato.
+
+## Página inteira
+
+`Page.getLayoutMetrics` devolve o tamanho real do conteúdo (`cssContentSize`).
+A folha contínua usa esse tamanho como papel, com margens zeradas e escala 1.
+O teto de 200 polegadas é o limite de leitura do formato PDF; acima disso o
+conteúdo é paginado normalmente, o que preserva a leitura em vez de gerar um
+arquivo que poucos visualizadores abrem.
+
+Como a folha acompanha o conteúdo, margens, escala e orientação ficam fixas
+nesse modo.
+
+Quebras de página explícitas no CSS de impressão do site (`break-after: page`)
+continuam valendo: o Chrome respeita a intenção do autor e divide o
+documento, mesmo em folha contínua.
+
 ## Download: por que o atributo `download`
 
 O Chrome **ignora a opção `filename` de `chrome.downloads.download` para URLs `blob:`** e substitui pelo UUID da origem. O evento `onDeterminingFilename`, que permitiria sugerir o nome, não é disparado para esse caminho.

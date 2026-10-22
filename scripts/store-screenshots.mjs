@@ -41,7 +41,7 @@ try {
 
   await preview.screenshot({ path: resolve(output, '01-previa.png') });
 
-  await preview.getByLabel('Orientação', { exact: true }).selectOption('landscape');
+  await preview.getByRole('radio', { name: 'Paisagem' }).click();
   await preview.getByRole('button', { name: 'Atualizar prévia' }).click();
   await preview.getByRole('status').filter({ hasText: 'PDF pronto' }).waitFor({ timeout: 30_000 });
   await preview.waitForTimeout(800);
