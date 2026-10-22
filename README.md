@@ -10,13 +10,14 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.1.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.1.0">download</a></sub>
+  <sub>Versão 1.2.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.2.0">download</a></sub>
 </p>
 
 <p align="center">
   <a href="#instalação">Instalar</a> •
   <a href="#como-usar">Como usar</a> •
   <a href="#recursos">Recursos</a> •
+  <a href="#novidades">Novidades</a> •
   <a href="#privacidade">Privacidade</a> •
   <a href="#desenvolvimento">Desenvolvimento</a>
 </p>
@@ -49,6 +50,28 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 | **Duas formas de salvar** | **Baixar PDF** na pasta do navegador e **Salvar como…** com o diálogo nativo |
 | **Preferências lembradas** | Suas últimas opções de impressão sobrevivem ao reinício do navegador |
 | **Interface em português** | Toda a extensão, do botão ao mensaje de erro |
+
+<!-- novidades -->
+
+### v1.2.0 — 22/10/2026
+
+- Páginas em modo escuro agora saem no PDF exatamente como aparecem na tela.
+- Cada atualização já vira release no GitHub, com o pacote para baixar e as novidades no README.
+- Mais tamanhos de papel, página inteira contínua e visual renovado na prévia.
+
+### v1.1.0 — 22/10/2026
+
+- **Página inteira**: uma única folha contínua com a altura do conteúdo, sem paginação.
+- **Mais tamanhos de papel**: A3, A5, Legal, Tabloid e medidas personalizadas em milímetros.
+- **Visual renovado**, com a identidade oficial e controles mais claros de orientação, margens e escala.
+
+### v1.0.0 — 21/10/2026
+
+- Primeira versão: converta a aba atual em PDF com um clique, revise na prévia e salve como preferir.
+- Texto selecionável, links clicáveis, ajustes de impressão e preferências lembradas.
+- Processamento 100% local: nada é enviado para servidores.
+
+<!-- /novidades -->
 
 ## Instalação
 
@@ -127,6 +150,8 @@ npm run test:e2e  # testes de fluxo real em Chromium
 | `npm run store:screenshots` | Gera as capturas para a Chrome Web Store |
 | `npm run verify:manifest` | Confere permissões, CSP e versão do manifesto |
 | `npm run verify:workspace` | Garante que não há artefatos órfãos na raiz |
+| `npm run release:prepare` | Sobe a versão e fecha CHANGELOG e README para o próximo merge |
+| `npm run release:check` | Confere se a release está pronta (o CI usa o mesmo script) |
 
 ### Estrutura
 
@@ -157,9 +182,18 @@ docs/               Especificação, arquitetura, segurança e validação
 
 Branches curtas, commits convencionais e integração por PR. A branch principal é protegida: toda mudança passa pelos checks de integração contínua.
 
+**Cada merge publica uma versão.** Antes de abrir o PR, prepare a release:
+
+```bash
+npm run release:prepare -- minor -- "o que mudou para o usuário"
+```
+
+O incremento segue o commit convencional: `feat` → minor, `fix` → patch, mudança incompatível → major. O CI bloqueia o merge se a versão, o CHANGELOG ou o README não estiverem prontos; ao integrar, a tag e a release são publicadas automaticamente com o `.zip`.
+
 ```bash
 git switch -c feat/minha-mudanca
 # ... código, testes e documentação
+npm run release:prepare -- minor -- "destaque da mudança"
 git commit -m "feat: descrição da mudança"
 git push -u origin feat/minha-mudanca
 ```

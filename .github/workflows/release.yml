@@ -4,10 +4,16 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag a publicar (ex.: v1.2.0)'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag a publicar (ex.: v0.1.0)'
+        description: 'Tag a publicar (ex.: v1.2.0)'
         required: true
 
 permissions:
@@ -48,8 +54,9 @@ jobs:
         run: npm run package
 
       - name: Conferir a versão da tag
-        if: ${{ inputs.tag == '' }}
-        run: node -e "const v=require('./package.json').version; const t=process.env.GITHUB_REF_NAME.replace(/^v/,''); if(v!==t){console.error('A tag '+t+' nao corresponde a versao '+v);process.exit(1);}"
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: node -e "const v=require('./package.json').version; const t=process.env.TAG.replace(/^v/,''); if(v!==t){console.error('A tag '+t+' nao corresponde a versao '+v);process.exit(1);}"
 
       - name: Publicar a release
         uses: softprops/action-gh-release@v2

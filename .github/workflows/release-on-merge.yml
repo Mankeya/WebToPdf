@@ -1,0 +1,64 @@
+name: Release automática
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    name: Criar a tag da versão
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      versao: ${{ steps.versao.outputs.valor }}
+      publicar: ${{ steps.versao.outputs.publicar }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ler a versão integrada
+        id: versao
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "valor=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null 2>&1; then
+            echo "publicar=false" >> "$GITHUB_OUTPUT"
+            echo "A tag v$version já existe; nada a publicar."
+          else
+            echo "publicar=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Criar e enviar a tag
+        if: steps.versao.outputs.publicar == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.versao.outputs.valor }}" -m "WEBtoPDF v${{ steps.versao.outputs.valor }}"
+          git push origin "v${{ steps.versao.outputs.valor }}"
+
+  release:
+    name: Empacotar e publicar
+    needs: tag
+    if: needs.tag.outputs.publicar == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: v${{ needs.tag.outputs.versao }}
+
+  store:
+    name: Enviar para a loja
+    needs: [tag, release]
+    if: needs.tag.outputs.publicar == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/publish-store.yml
+    with:
+      tag: v${{ needs.tag.outputs.versao }}
+    secrets: inherit

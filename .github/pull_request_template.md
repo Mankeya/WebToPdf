@@ -28,6 +28,15 @@
 - [ ] Nenhum dado de página, PDF ou credencial é registrado ou versionado
 - [ ] `node scripts/verify-manifest.mjs` aprovado
 
+## Release
+
+<!-- Todo merge publica uma nova versão. Prepare antes de abrir o PR. -->
+
+- [ ] `npm run release:prepare -- <major|minor|patch> -- "destaque"` executado
+- [ ] O incremento segue o tipo do commit (`feat` → minor, `fix` → patch, incompatível → major)
+- [ ] Os destaques no README descrevem a mudança para o usuário final, sem jargão técnico
+- [ ] `npm run release:check -- --base origin/main` aprovado
+
 ## Revisão
 
 - [ ] Revisei o próprio diff antes de abrir o PR

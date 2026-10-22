@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "WEBtoPDF",
   "description": "Converte a página atual em PDF com prévia e ajustes de impressão. Processamento local, sem envio de dados a servidores.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "minimum_chrome_version": "116",
   "icons": {
     "16": "icons/icon-16.png",
@@ -10,7 +10,12 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "permissions": ["activeTab", "debugger", "storage", "downloads"],
+  "permissions": [
+    "activeTab",
+    "debugger",
+    "storage",
+    "downloads"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"

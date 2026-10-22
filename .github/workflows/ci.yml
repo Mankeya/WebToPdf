@@ -96,3 +96,24 @@ jobs:
 
       - name: Conferir permissões e CSP do manifesto de origem
         run: node scripts/verify-manifest.mjs public/manifest.json
+
+  release:
+    name: Release preparada
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Conferir versão, CHANGELOG e README
+        if: github.event_name == 'pull_request'
+        run: node scripts/release-check.mjs --base "origin/${{ github.base_ref }}"
+
+      - name: Conferir consistência interna
+        if: github.event_name != 'pull_request'
+        run: node scripts/release-check.mjs
