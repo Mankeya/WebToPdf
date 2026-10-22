@@ -103,9 +103,8 @@ web, extrator de pdf, preview de pdf, web to pdf
 | Ícone do item | PNG | 128×128 | `public/icons/icon-128.png` |
 | Captura 1 | PNG/JPEG | 1280×800 | `store/screenshots/01-previa.png` |
 | Captura 2 | PNG/JPEG | 1280×800 | `store/screenshots/02-ajustes.png` |
-| Captura 3 | PNG/JPEG | 1280×800 | `store/screenshots/03-download.png` |
-| Captura 4 | PNG/JPEG | 1280×800 | `store/screenshots/04-paginas.png` |
-| Captura 5 | PNG/JPEG | 1280×800 | `store/screenshots/05-texto-links.png` |
+| Captura 3 | PNG/JPEG | 1280×800 | `store/screenshots/03-paginas.png` |
+| Captura 4 | PNG/JPEG | 1280×800 | `store/screenshots/04-nome-arquivo.png` |
 
 Geradas por `npm run store:screenshots`. O painel aceita até 5 capturas.
 
