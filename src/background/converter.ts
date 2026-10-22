@@ -61,6 +61,7 @@ export async function convertTabToPdf(
 
   const target = { tabId };
   let attached = false;
+  let emulated = false;
   let stream: string | undefined;
   const cancel = (): void => {
     if (attached) void chrome.debugger.detach(target).catch(() => undefined);
@@ -75,6 +76,13 @@ export async function convertTabToPdf(
     } catch {
       throw new ConversionError('O Chrome não permitiu iniciar a impressão. Feche o DevTools da página e verifique as permissões ou políticas do navegador.');
     }
+    signal.throwIfAborted();
+    // A impressão usa a mídia "print" por padrão, o que aplica as folhas de
+    // estilo de impressão do próprio site — frequentemente um fundo branco que
+    // apaga temas escuros. Emular "screen" mantém a aparência que o usuário
+    // está vendo, sem alterar o DOM da página.
+    await chrome.debugger.sendCommand(target, 'Emulation.setEmulatedMedia', { media: 'screen' });
+    emulated = true;
     signal.throwIfAborted();
     // activeTab não cobre regenerações após navegar para outra origem. Consultar
     // somente a entrada atual via a sessão já autorizada evita pedir "tabs".
@@ -147,6 +155,7 @@ export async function convertTabToPdf(
   } finally {
     signal.removeEventListener('abort', cancel);
     if (stream) await chrome.debugger.sendCommand(target, 'IO.close', { handle: stream }).catch(() => undefined);
+    if (emulated) await chrome.debugger.sendCommand(target, 'Emulation.setEmulatedMedia', { media: '' }).catch(() => undefined);
     if (attached) await chrome.debugger.detach(target).catch(() => undefined);
   }
 }
