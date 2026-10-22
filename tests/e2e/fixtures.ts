@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import { chromium, test as base, expect } from '@playwright/test';
 import type { Worker } from '@playwright/test';
 
-export const test = base.extend<{ extensionWorker: Worker; extensionId: string; fixtureUrl: string; downloadDir: string }>({
+export const test = base.extend<{ extensionWorker: Worker; extensionId: string; fixtureUrl: string; longFixtureUrl: string; downloadDir: string }>({
   context: async ({ headless }, use) => {
     const profile = await mkdtemp(join(tmpdir(), 'webtopdf-conversion-'));
     const extensionPath = resolve('dist');
@@ -54,6 +54,24 @@ export const test = base.extend<{ extensionWorker: Worker; extensionId: string; 
     } finally {
       // O Chrome mantém conexões alive; sem encerrá-las o close() nunca
       // concluiria e o teardown estouraria o tempo limite do teste.
+      server.closeAllConnections();
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      });
+    }
+  },
+  longFixtureUrl: async ({}, use) => {
+    const html = await readFile(resolve('tests/fixtures/longo.html'));
+    const server = createServer((_request, response) => {
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      response.end(html);
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const address = server.address();
+      if (!address || typeof address === 'string') throw new Error('Servidor de fixture indisponível.');
+      await use(`http://127.0.0.1:${address.port}/longo.html`);
+    } finally {
       server.closeAllConnections();
       await new Promise<void>((resolve) => {
         server.close(() => resolve());

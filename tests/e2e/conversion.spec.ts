@@ -43,7 +43,7 @@ test('aplica ajustes somente ao atualizar e lembra as preferências', async ({ e
   await expect(preview.getByRole('status')).toContainText('PDF pronto');
   const canvas = preview.getByLabel('Página 1 do PDF');
   const before = await canvas.boundingBox();
-  await preview.getByLabel('Orientação', { exact: true }).selectOption('landscape');
+  await preview.getByRole('radio', { name: 'Paisagem' }).click();
   await expect(preview.getByRole('status')).toContainText('ajustes pendentes');
   expect(await canvas.boundingBox()).toEqual(before);
   await preview.getByRole('button', { name: 'Atualizar prévia' }).click();
@@ -55,7 +55,7 @@ test('aplica ajustes somente ao atualizar e lembra as preferências', async ({ e
   const reopened = await context.newPage();
   await reopened.goto(previewUrl);
   await expect(reopened.getByRole('status')).toContainText('PDF pronto');
-  await expect(reopened.getByLabel('Orientação', { exact: true })).toHaveValue('landscape');
+  await expect(reopened.getByRole('radio', { name: 'Paisagem' })).toHaveAttribute('aria-checked', 'true');
 });
 
 test('habilita botões de download após conversão e usa nome padrão', async ({ extensionWorker, fixtureUrl, context, extensionId }) => {
@@ -113,4 +113,70 @@ test('baixa o PDF exibido com nome válido e sem sobrescrever', async ({ extensi
   expect(files).toContain('meu-relatorio.pdf');
   expect(files.some((name) => name.startsWith('meu-relatorio ('))).toBe(true);
   expect(new Set(files).size).toBe(2);
+});
+
+test('oferece os tamanhos de papel e aplica o escolhido', async ({ extensionWorker, fixtureUrl, context, extensionId }) => {
+  const tabId = await extensionWorker.evaluate(async (url) => (await chrome.tabs.create({ url })).id, fixtureUrl);
+  const source = context.pages().find((page) => page.url() === fixtureUrl) ?? await context.waitForEvent('page');
+  await source.waitForLoadState('load');
+  const preview = await context.newPage();
+  await preview.goto(`chrome-extension://${extensionId}/preview.html?sourceTabId=${tabId}`);
+  await expect(preview.getByRole('status')).toContainText('PDF pronto', { timeout: 20_000 });
+
+  for (const name of ['A4', 'A3', 'A5', 'Carta', 'Legal', 'Tabloid', 'Personalizado', 'Página inteira']) {
+    await expect(preview.getByRole('radio', { name })).toBeVisible();
+  }
+  await expect(preview.getByRole('radio', { name: 'A4' })).toHaveAttribute('aria-checked', 'true');
+
+  const canvas = preview.getByLabel('Página 1 do PDF');
+  const a4 = await canvas.boundingBox();
+  expect(a4?.width).toBeGreaterThan(700);
+  expect(a4?.width).toBeLessThan(820);
+
+  await preview.getByRole('radio', { name: 'A3' }).click();
+  await preview.getByRole('button', { name: 'Atualizar prévia' }).click();
+  await expect(preview.getByRole('status')).toContainText('PDF pronto');
+  const a3 = await canvas.boundingBox();
+  expect(a3?.width).toBeGreaterThan(a4?.width ?? 0);
+  expect(a3?.height).toBeGreaterThan(a4?.height ?? 0);
+});
+
+test('gera uma única folha contínua em página inteira', async ({ extensionWorker, longFixtureUrl, context, extensionId }) => {
+  const tabId = await extensionWorker.evaluate(async (url) => (await chrome.tabs.create({ url })).id, longFixtureUrl);
+  const source = context.pages().find((page) => page.url() === longFixtureUrl) ?? await context.waitForEvent('page');
+  await source.waitForLoadState('load');
+  const preview = await context.newPage();
+  await preview.goto(`chrome-extension://${extensionId}/preview.html?sourceTabId=${tabId}`);
+  await expect(preview.getByRole('status')).toContainText('PDF pronto', { timeout: 20_000 });
+
+  await preview.getByRole('radio', { name: 'Página inteira' }).click();
+  await expect(preview.getByLabel(/Margens/)).toBeDisabled();
+  await expect(preview.getByLabel(/Escala/)).toBeDisabled();
+  await expect(preview.getByRole('radio', { name: 'Retrato' })).toBeDisabled();
+  await preview.getByRole('button', { name: 'Atualizar prévia' }).click();
+  await expect(preview.getByRole('status')).toContainText('PDF pronto');
+
+  await expect(preview.getByLabel('Página atual')).toHaveValue('1');
+  await expect(preview.getByRole('button', { name: 'Próxima página' })).toBeDisabled();
+  const page = await preview.locator('.pdf-page').boundingBox();
+  expect(page?.height).toBeGreaterThan(2000);
+});
+
+test('aplica as medidas de papel personalizado', async ({ extensionWorker, fixtureUrl, context, extensionId }) => {
+  const tabId = await extensionWorker.evaluate(async (url) => (await chrome.tabs.create({ url })).id, fixtureUrl);
+  const source = context.pages().find((page) => page.url() === fixtureUrl) ?? await context.waitForEvent('page');
+  await source.waitForLoadState('load');
+  const preview = await context.newPage();
+  await preview.goto(`chrome-extension://${extensionId}/preview.html?sourceTabId=${tabId}`);
+  await expect(preview.getByRole('status')).toContainText('PDF pronto', { timeout: 20_000 });
+
+  await preview.getByRole('radio', { name: 'Personalizado' }).click();
+  await preview.getByLabel('Largura (mm)').fill('120');
+  await preview.getByLabel('Altura (mm)').fill('400');
+  await preview.getByRole('button', { name: 'Atualizar prévia' }).click();
+  await expect(preview.getByRole('status')).toContainText('PDF pronto');
+
+  const page = await preview.locator('.pdf-page').boundingBox();
+  expect(page?.width).toBeLessThan(page?.height ?? 0);
+  expect(page?.height).toBeGreaterThan(1400);
 });

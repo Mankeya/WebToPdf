@@ -1,5 +1,5 @@
-import { DEFAULT_PRINT_SETTINGS, parsePrintSettings } from '../shared/settings';
-import type { PrintSettings } from '../shared/settings';
+import { DEFAULT_PRINT_SETTINGS, PAPER_SIZES, parsePrintSettings, resolvePaperSizeOriented } from '../shared/settings';
+import type { PaperSize, PrintSettings } from '../shared/settings';
 import { createPdfFilename } from '../shared/filename';
 import { parseSourceTabId } from '../shared/preview-url';
 import { requestConversion } from './conversion-client';
@@ -14,69 +14,111 @@ function element<T extends HTMLElement>(selector: string): T {
 }
 
 const status = element<HTMLElement>('#status');
-const form = element<HTMLFormElement>('#print-form');
-const fieldset = element<HTMLFieldSetElement>('fieldset');
-const filename = element<HTMLInputElement>('#filename');
-const paperSize = element<HTMLSelectElement>('#paper-size');
-const orientation = element<HTMLSelectElement>('#orientation');
+const paperGrid = element<HTMLElement>('#paper-size');
+const customFields = element<HTMLElement>('#custom-paper-fields');
+const customWidth = element<HTMLInputElement>('#custom-width');
+const customHeight = element<HTMLInputElement>('#custom-height');
+const paperHint = element<HTMLElement>('#paper-hint');
+const orientationButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-orientation]')];
 const margin = element<HTMLInputElement>('#margin');
+const marginOutput = element<HTMLElement>('#margin-output');
 const scale = element<HTMLInputElement>('#scale');
+const scaleOutput = element<HTMLElement>('#scale-output');
+const fullPageHint = element<HTMLElement>('#full-page-hint');
 const backgrounds = element<HTMLInputElement>('#backgrounds');
 const headerFooter = element<HTMLInputElement>('#header-footer');
+const filename = element<HTMLInputElement>('#filename');
+const updateButton = element<HTMLButtonElement>('#update-preview');
+const downloadButton = element<HTMLButtonElement>('#download-pdf');
+const saveAsButton = element<HTMLButtonElement>('#save-as-pdf');
 const controls = element<HTMLElement>('.viewer-controls');
 const previous = element<HTMLButtonElement>('#previous-page');
 const next = element<HTMLButtonElement>('#next-page');
 const pageNumber = element<HTMLInputElement>('#page-number');
 const pageCount = element<HTMLElement>('#page-count');
 const zoom = element<HTMLSelectElement>('#zoom');
-const downloadBtn = element<HTMLButtonElement>('#download-pdf');
-const saveAsBtn = element<HTMLButtonElement>('#save-as-pdf');
 const viewer = new PdfViewer(element('#pdf-container'));
+
 const sourceTabId = parseSourceTabId(location.search);
 let busy = false;
 let controller: AbortController | null = null;
 let documentBytes: Uint8Array<ArrayBuffer> | null = null;
 let documentTitle = '';
 let filenameEdited = false;
-let savedSettings: PrintSettings = DEFAULT_PRINT_SETTINGS;
+let savedSettings: PrintSettings = { ...DEFAULT_PRINT_SETTINGS };
 
-async function loadSavedSettings(): Promise<void> {
-  try {
-    const result = await chrome.storage.local.get('printSettings');
-    const parsed = parsePrintSettings(result.printSettings);
-    if (parsed) {
-      savedSettings = parsed;
-      applySettings(savedSettings);
-    } else {
-      applySettings(DEFAULT_PRINT_SETTINGS);
-    }
-  } catch {
-    applySettings(DEFAULT_PRINT_SETTINGS);
+const PAPER_SHAPE_HEIGHT = 34;
+
+function buildPaperOptions(): void {
+  const entries: { id: PaperSize; label: string; short: string; widthMm: number; heightMm: number }[] = [
+    ...PAPER_SIZES.map((paper) => ({ id: paper.id, label: paper.label, short: paper.label, widthMm: paper.widthMm, heightMm: paper.heightMm })),
+    { id: 'Custom', label: 'Personalizado', short: 'Sob medida', widthMm: 210, heightMm: 297 },
+    { id: 'FullPage', label: 'Página inteira', short: 'Inteira', widthMm: 210, heightMm: 297 },
+  ];
+
+  for (const entry of entries) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'paper-option';
+    button.setAttribute('role', 'radio');
+    button.setAttribute('aria-checked', 'false');
+    button.setAttribute('aria-label', entry.label);
+    button.dataset.paper = entry.id;
+    button.title = entry.label;
+
+    const shape = document.createElement('span');
+    shape.className = 'paper-shape';
+    const ratio = entry.id === 'FullPage' ? 0.28 : entry.widthMm / entry.heightMm;
+    const height = entry.id === 'FullPage' ? 40 : PAPER_SHAPE_HEIGHT;
+    const width = Math.max(10, Math.round(height * ratio));
+    shape.style.width = `${width}px`;
+    shape.style.height = `${height}px`;
+
+    const label = document.createElement('span');
+    label.className = 'paper-label';
+    label.textContent = entry.short;
+
+    button.append(shape, label);
+    button.addEventListener('click', () => {
+      updateSetting({ paperSize: entry.id });
+    });
+    paperGrid.append(button);
   }
 }
 
-async function saveSettings(settings: Readonly<PrintSettings>): Promise<void> {
-  try {
-    await chrome.storage.local.set({ printSettings: settings });
-    savedSettings = { ...settings };
-  } catch {
-    // Silenciosamente ignora falhas de armazenamento.
+function renderPaperState(): void {
+  for (const button of paperGrid.querySelectorAll<HTMLButtonElement>('[data-paper]')) {
+    button.setAttribute('aria-checked', String(button.dataset.paper === savedSettings.paperSize));
   }
-}
+  for (const button of orientationButtons) {
+    button.setAttribute('aria-checked', String(button.dataset.orientation === savedSettings.orientation));
+  }
+  customFields.hidden = savedSettings.paperSize !== 'Custom';
+  customWidth.value = String(savedSettings.customWidthMm);
+  customHeight.value = String(savedSettings.customHeightMm);
 
-function applySettings(settings: Readonly<PrintSettings>): void {
-  paperSize.value = settings.paperSize;
-  orientation.value = settings.orientation;
-  margin.value = String(settings.marginMm);
-  scale.value = String(settings.scale * 100);
-  backgrounds.checked = settings.printBackground;
-  headerFooter.checked = settings.displayHeaderFooter;
+  const isFullPage = savedSettings.paperSize === 'FullPage';
+  margin.disabled = isFullPage || busy;
+  scale.disabled = isFullPage || busy;
+  for (const button of orientationButtons) button.disabled = isFullPage || busy;
+  fullPageHint.hidden = !isFullPage;
+
+  const dimensions = resolvePaperSizeOriented(savedSettings);
+  const orientationLabel = savedSettings.orientation === 'landscape' ? 'paisagem' : 'retrato';
+  paperHint.textContent = isFullPage
+    ? 'Uma única folha contínua, com a altura do conteúdo.'
+    : `${dimensions.widthMm.toFixed(0).replace('.', ',')} × ${dimensions.heightMm.toFixed(0).replace('.', ',')} mm, ${orientationLabel}.`;
+
+  marginOutput.textContent = `${savedSettings.marginMm} mm`;
+  scaleOutput.textContent = `${Math.round(savedSettings.scale * 100)}%`;
 }
 
 function readSettings(): PrintSettings | null {
   return parsePrintSettings({
-    paperSize: paperSize.value,
-    orientation: orientation.value,
+    paperSize: savedSettings.paperSize,
+    customWidthMm: customWidth.valueAsNumber,
+    customHeightMm: customHeight.valueAsNumber,
+    orientation: savedSettings.orientation,
     marginMm: margin.valueAsNumber,
     scale: scale.valueAsNumber / 100,
     printBackground: backgrounds.checked,
@@ -85,28 +127,42 @@ function readSettings(): PrintSettings | null {
 }
 
 function updateControls(): void {
-  fieldset.disabled = busy || sourceTabId === null;
   controls.hidden = viewer.pageCount === 0;
   previous.disabled = busy || viewer.pageNumber <= 1;
   next.disabled = busy || viewer.pageNumber >= viewer.pageCount;
   pageNumber.disabled = busy;
   zoom.disabled = busy;
   const hasPdf = documentBytes !== null;
-  downloadBtn.disabled = busy || !hasPdf;
-  saveAsBtn.disabled = busy || !hasPdf;
+  downloadButton.disabled = busy || !hasPdf;
+  saveAsButton.disabled = busy || !hasPdf;
+  updateButton.disabled = busy || sourceTabId === null;
   pageNumber.value = String(viewer.pageNumber);
   pageNumber.max = String(viewer.pageCount);
   pageCount.textContent = `de ${viewer.pageCount}`;
+  renderPaperState();
+}
+
+function markPendingChanges(): void {
+  if (documentBytes && !busy) {
+    status.textContent = 'Há ajustes pendentes. Clique em Atualizar prévia para aplicá-los ao PDF.';
+  }
+}
+
+function updateSetting(patch: Partial<PrintSettings>): void {
+  savedSettings = { ...savedSettings, ...patch };
+  renderPaperState();
+  void persistSettings();
+  markPendingChanges();
 }
 
 async function convert(): Promise<void> {
   if (busy || sourceTabId === null) return;
   const settings = readSettings();
-  if (!settings || !form.reportValidity()) {
+  if (!settings) {
     status.textContent = 'Confira as opções de impressão antes de atualizar.';
     return;
   }
-  await saveSettings(settings);
+  savedSettings = settings;
   busy = true;
   updateControls();
   status.textContent = 'Convertendo a página e preparando a prévia…';
@@ -117,7 +173,8 @@ async function convert(): Promise<void> {
     documentBytes = result.bytes;
     documentTitle = result.title;
     if (!filenameEdited) filename.value = createPdfFilename(result.title);
-    status.textContent = `PDF pronto — ${viewer.pageCount} ${viewer.pageCount === 1 ? 'página' : 'páginas'}.`;
+    const pages = viewer.pageCount;
+    status.textContent = `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
   } catch (error) {
     status.textContent = `${error instanceof Error ? error.message : 'Não foi possível gerar a prévia.'}${documentBytes ? ' A prévia anterior foi mantida.' : ''}`;
   } finally {
@@ -161,17 +218,61 @@ async function downloadPdf(saveAs: boolean): Promise<void> {
   }
 }
 
+async function loadSavedSettings(): Promise<void> {
+  try {
+    const result = await chrome.storage.local.get('printSettings');
+    const parsed = parsePrintSettings(result.printSettings);
+    if (parsed) savedSettings = parsed;
+  } catch {
+    // Mantém os padrões.
+  }
+  backgrounds.checked = savedSettings.printBackground;
+  headerFooter.checked = savedSettings.displayHeaderFooter;
+  margin.value = String(savedSettings.marginMm);
+  scale.value = String(savedSettings.scale * 100);
+}
+
+async function persistSettings(): Promise<void> {
+  try {
+    await chrome.storage.local.set({ printSettings: savedSettings });
+  } catch {
+    // Ignora falhas de armazenamento.
+  }
+}
+
+buildPaperOptions();
+
 filename.addEventListener('input', () => { filenameEdited = true; });
-form.addEventListener('submit', (event) => { event.preventDefault(); void convert(); });
-form.addEventListener('change', () => {
-  if (documentBytes && !busy) status.textContent = 'Há ajustes pendentes. Clique em Atualizar prévia para aplicá-los ao PDF.';
+updateButton.addEventListener('click', () => { void convert(); });
+for (const button of orientationButtons) {
+  button.addEventListener('click', () => {
+    updateSetting({ orientation: button.dataset.orientation === 'landscape' ? 'landscape' : 'portrait' });
+  });
+}
+customWidth.addEventListener('input', () => {
+  updateSetting({ customWidthMm: customWidth.valueAsNumber });
+});
+customHeight.addEventListener('input', () => {
+  updateSetting({ customHeightMm: customHeight.valueAsNumber });
+});
+margin.addEventListener('input', () => {
+  updateSetting({ marginMm: margin.valueAsNumber });
+});
+scale.addEventListener('input', () => {
+  updateSetting({ scale: scale.valueAsNumber / 100 });
+});
+backgrounds.addEventListener('change', () => {
+  updateSetting({ printBackground: backgrounds.checked });
+});
+headerFooter.addEventListener('change', () => {
+  updateSetting({ displayHeaderFooter: headerFooter.checked });
 });
 previous.addEventListener('click', () => void navigate(viewer.pageNumber - 1));
 next.addEventListener('click', () => void navigate(viewer.pageNumber + 1));
 pageNumber.addEventListener('change', () => void navigate(pageNumber.valueAsNumber));
 zoom.addEventListener('change', () => { viewer.zoom = Number(zoom.value); void navigate(viewer.pageNumber); });
-downloadBtn.addEventListener('click', () => void downloadPdf(false));
-saveAsBtn.addEventListener('click', () => void downloadPdf(true));
+downloadButton.addEventListener('click', () => void downloadPdf(false));
+saveAsButton.addEventListener('click', () => void downloadPdf(true));
 window.addEventListener('pagehide', () => {
   controller?.abort();
   documentBytes = null;
@@ -179,10 +280,11 @@ window.addEventListener('pagehide', () => {
 }, { once: true });
 
 await loadSavedSettings();
+renderPaperState();
 
 if (new URLSearchParams(location.search).get('error') || sourceTabId === null) {
   status.textContent = 'Página não compatível. Abra a extensão pelo ícone em uma aba HTTP ou HTTPS.';
-  fieldset.disabled = true;
+  updateControls();
 } else {
   void convert();
 }
