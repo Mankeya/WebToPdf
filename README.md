@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.2.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.2.0">download</a></sub>
+  <sub>Versão 1.3.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.3.0">download</a></sub>
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 
 ## O que é
 
-Um clique no ícone do WEBtoPDF abre a prévia da página atual, **já convertida em PDF**. Você revisa o resultado, ajusta a impressão e só então salva o arquivo.
+Clicar no ícone do WEBtoPDF abre um **menu de formatos**. Escolher **PDF** abre a prévia da página atual, **já convertida**. Você revisa o resultado, ajusta a impressão e só então salva o arquivo. PNG, Texto e Markdown chegam nas próximas versões — um formato por versão, cada um testado antes de entrar.
 
 O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **texto selecionável** e **links clicáveis**, respeitando o layout de impressão do site.
 
@@ -38,6 +38,7 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 | Recurso | Detalhe |
 |---|---|
+| **Menu de formatos** | Um clique no ícone abre o menu; o PDF já está disponível e os próximos formatos chegam um por versão |
 | **Prévia imediata** | A aba atual já aparece convertida ao abrir a tela |
 | **Página por página** | Navegação, campo de página e zoom de 50% a 200% |
 | **Texto e links** | Camada de texto selecionável e links clicáveis |
@@ -53,6 +54,10 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 <!-- novidades -->
 
+### v1.3.0 — 23/10/2026
+
+- Menu de formatos ao clicar no ícone: escolha o formato da conversão — o PDF já está disponível e os próximos formatos chegam versão a versão.
+
 ### v1.2.0 — 22/10/2026
 
 - Páginas em modo escuro agora saem no PDF exatamente como aparecem na tela.
@@ -64,12 +69,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 - **Página inteira**: uma única folha contínua com a altura do conteúdo, sem paginação.
 - **Mais tamanhos de papel**: A3, A5, Legal, Tabloid e medidas personalizadas em milímetros.
 - **Visual renovado**, com a identidade oficial e controles mais claros de orientação, margens e escala.
-
-### v1.0.0 — 21/10/2026
-
-- Primeira versão: converta a aba atual em PDF com um clique, revise na prévia e salve como preferir.
-- Texto selecionável, links clicáveis, ajustes de impressão e preferências lembradas.
-- Processamento 100% local: nada é enviado para servidores.
 
 <!-- /novidades -->
 
@@ -88,11 +87,10 @@ Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O
 
 1. Abra qualquer página HTTP ou HTTPS.
 2. Clique no ícone **WEBtoPDF**.
-3. Uma nova aba abre com a prévia do PDF.
-4. Ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser.
-
-Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo. Sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor.
-5. Clique em **Baixar PDF** ou **Salvar como…**.
+3. No menu de formatos, escolha **PDF**. Os próximos formatos aparecem desabilitados, com o selo **Em breve**.
+4. Uma nova aba abre com a prévia do PDF.
+5. Ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor.
+6. Clique em **Baixar PDF** ou **Salvar como…**.
 
 A aba original precisa continuar aberta enquanto você ajusta e regenera o documento. Se ela for fechada, a prévia já pronta continua disponível para download.
 
@@ -110,7 +108,7 @@ A extensão pede quatro permissões, todas com uso restrito e verificável:
 
 | Permissão | Para quê |
 |---|---|
-| `activeTab` | Ler o título da aba para nomear o arquivo |
+| `activeTab` | Ler URL e título da aba acionada (validação no menu e nome do arquivo) |
 | `debugger` | Usar o motor de impressão do Chrome (`Page.printToPDF`) |
 | `storage` | Lembrar as preferências de impressão |
 | `downloads` | Gravar o PDF e evitar sobrescrita de arquivos |
@@ -156,9 +154,11 @@ npm run test:e2e  # testes de fluxo real em Chromium
 ### Estrutura
 
 ```text
-src/background/     Ação da extensão e conversão via chrome.debugger
+src/background/     Conversão via chrome.debugger e validação no service worker
+src/popup/          Menu de formatos aberto pelo ícone
 src/preview/        Prévia, ajustes, download e visualização com PDF.js
-src/shared/         Configurações, nomes de arquivo e contratos
+src/shared/         Configurações, formatos, nomes de arquivo e contratos
+src/styles/         Tokens da marca compartilhados entre telas
 public/             Manifesto MV3, ícones e marca
 scripts/            Ícones, empacotamento, capturas e verificações
 tests/unit/         Testes de regras puras

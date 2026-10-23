@@ -7,7 +7,7 @@ const allowed = new Set([
   'node_modules', 'dist', 'coverage', 'playwright-report', 'test-results',
   '.gitignore', '.gitattributes', 'AGENTS.md', 'CHANGELOG.md', 'README.md', 'SECURITY.md',
   'opencode.json', 'skills-lock.json', 'package.json', 'package-lock.json',
-  'playwright.config.ts', 'preview.html', 'tsconfig.json', 'vite.config.ts', 'vitest.config.ts',
+  'playwright.config.ts', 'popup.html', 'preview.html', 'tsconfig.json', 'vite.config.ts', 'vitest.config.ts',
 ]);
 
 const unexpected = [];

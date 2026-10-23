@@ -21,7 +21,7 @@ npm run package
 
 | # | Ação | Resultado esperado |
 |---|---|---|
-| 1 | Abra `https://example.com` e clique no ícone | Abre nova aba com a prévia; status **"PDF pronto"** |
+| 1 | Abra `https://example.com`, clique no ícone e escolha **PDF** no menu | O menu lista os formatos (PDF ativo; PNG, Texto e Markdown com **"Em breve"**) e abre nova aba com a prévia; status **"PDF pronto"** |
 | 2 | Observe a barra superior durante a conversão | Chrome pode mostrar aviso temporário de depuração; some ao terminar |
 | 3 | Verifique o texto | Clique e arraste sobre o PDF: o texto é selecionável |
 | 4 | Verifique os links | O link do rodapé abre em nova aba |
@@ -35,10 +35,11 @@ npm run package
 | 12 | Clique em **Salvar como…** | Abre o diálogo nativo; confirme o nome pré-preenchido e o destino |
 | 13 | Feche a aba original e tente **Atualizar prévia** | Mensagem de que a página original não está disponível; o PDF anterior continua baixável |
 | 14 | Feche e reabra a prévia | Preferências de impressão preservadas; PDF descartado |
-| 15 | Abra `chrome://extensions` e clique no ícone em `chrome://extensions` | Mensagem de página não compatível, sem conversão |
-| 16 | Repita a conversão na mesma aba rapidamente | Sem conversões concorrentes; aviso de que a página já está sendo convertida |
-| 17 | Abra o DevTools na aba original e converta | Mensagem Orientando a fechar o DevTools |
-| 18 | Converta uma página com mais de 20 MB de conteúdo | Limite de 32 MB com mensagem clara |
+| 15 | Abra `chrome://extensions` e clique no ícone | Mensagem de página não compatível no próprio menu, sem abrir a prévia |
+| 16 | Com o menu aberto, tente clicar em **PNG**, **Texto** ou **Markdown** | Botões desabilitados com selo **"Em breve"**; nenhuma aba é aberta |
+| 17 | Repita a conversão na mesma aba rapidamente | Sem conversões concorrentes; aviso de que a página já está sendo convertida |
+| 18 | Abra o DevTools na aba original e converta | Mensagem Orientando a fechar o DevTools |
+| 19 | Converta uma página com mais de 20 MB de conteúdo | Limite de 32 MB com mensagem clara |
 
 ## Verificações de privacidade
 

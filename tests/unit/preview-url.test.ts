@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPreviewUrl, isSupportedPage, parseSourceTabId } from '../../src/shared/preview-url';
+import { buildPreviewUrl, isSupportedPage, parseFormatParam, parseSourceTabId } from '../../src/shared/preview-url';
 
 describe('isSupportedPage', () => {
   it.each(['https://example.com', 'http://localhost:3000'])('aceita %s', (url) => {
@@ -21,18 +21,28 @@ describe('parseSourceTabId', () => {
   });
 });
 
+describe('parseFormatParam', () => {
+  it.each(['pdf', 'png', 'txt', 'md'])('aceita o formato %s', (format) => {
+    expect(parseFormatParam(`?format=${format}`)).toBe(format);
+  });
+
+  it.each(['', '?format=', '?format=docx', '?format=PDF', '?format=pdf%20'])('volta para pdf em valor ausente ou inválido: %s', (search) => {
+    expect(parseFormatParam(search)).toBe('pdf');
+  });
+});
+
 describe('buildPreviewUrl', () => {
   const base = 'chrome-extension://test-id/preview.html';
 
-  it('transmite somente o ID, sem URL ou título da página', () => {
-    expect(buildPreviewUrl(base, 42, 'https://example.com/private?token=secret')).toBe(`${base}?sourceTabId=42`);
+  it('transmite somente o ID e o formato, sem URL ou título da página', () => {
+    expect(buildPreviewUrl(base, 42)).toBe(`${base}?sourceTabId=42&format=pdf`);
   });
 
-  it('sinaliza página incompatível', () => {
-    expect(buildPreviewUrl(base, 42, 'chrome://extensions')).toBe(`${base}?error=unsupported-page`);
+  it('inclui o formato escolhido no menu', () => {
+    expect(buildPreviewUrl(base, 42, 'md')).toBe(`${base}?sourceTabId=42&format=md`);
   });
 
   it('não aceita aba ausente', () => {
-    expect(buildPreviewUrl(base, undefined, 'https://example.com')).toBe(`${base}?error=unsupported-page`);
+    expect(buildPreviewUrl(base, undefined)).toBe(`${base}?error=unsupported-page`);
   });
 });

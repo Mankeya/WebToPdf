@@ -19,7 +19,7 @@ test('carrega a extensão MV3 e a tela de prévia abre corretamente', async () =
 
     try {
       const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
-      expect(await worker.evaluate(() => chrome.action.onClicked.hasListeners())).toBe(true);
+      expect(await worker.evaluate(() => chrome.runtime.getManifest().action?.default_popup)).toBe('popup.html');
       const extensionId = new URL(worker.url()).hostname;
       const page = await context.newPage();
       const errors: string[] = [];
