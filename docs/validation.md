@@ -2,8 +2,8 @@
 
 ## Gate de conversão
 
-1. Anexar `chrome.debugger` a uma página HTTP/HTTPS e executar `Page.printToPDF` (PDF) ou `Page.captureScreenshot` (PNG).
-2. Confirmar PDF válido com texto selecionável e links, ou PNG com a assinatura correta e a altura do conteúdo.
+1. Anexar `chrome.debugger` a uma página HTTP/HTTPS e executar `Page.printToPDF` (PDF), `Page.captureScreenshot` (PNG) ou `Runtime.evaluate` sobre `innerText` (TXT).
+2. Confirmar PDF válido com texto selecionável e links, PNG com a assinatura correta e a altura do conteúdo, ou texto em UTF-8 com BOM igual ao exibido na tela.
 3. Desconectar o debugger em sucesso e em erro.
 4. Testar cancelamento pelo usuário, DevTools aberto, navegação e fechamento da aba original.
 5. Verificar permissões e políticas corporativas sem tentar contorná-las.
@@ -12,8 +12,8 @@
 
 ## Automatizado
 
-- `npm run check`: tipos, 118 testes unitários e build Vite.
-- `npm run test:e2e`: 20 testes em Chromium 156 (Playwright 1.64.1, headless) com perfil temporário.
+- `npm run check`: tipos, 123 testes unitários e build Vite.
+- `npm run test:e2e`: 24 testes em Chromium 156 (Playwright 1.64.1, headless) com perfil temporário.
   - impressão via debugger e liberação da conexão;
   - prévia real com texto selecionável, links e navegação de páginas;
   - ajustes aplicados somente ao pedir atualização e preferências lembradas;
@@ -22,6 +22,7 @@
   - tamanhos de papel, orientação, página inteira e papel personalizado;
   - preservação do fundo escuro, do CSS da tela e do esquema de cor do sistema;
   - captura PNG da página inteira, assinatura do arquivo, recusa acima de 16.384 px e ajustes de impressão ocultos;
+  - extração de texto com prévia em `<pre>`, download UTF-8 com BOM e recusa de página sem texto visível;
   - página incompatível e extensão carregando corretamente.
 - `npm run release:check`: confere versão, CHANGELOG e README — o mesmo script que o CI usa no check **Release preparada**.
 - `npm run package`: gera `webtopdf-<versão>.zip` com manifesto, ícones, worker do PDF.js, cmaps e fontes.
@@ -40,6 +41,7 @@ O Chrome 155 não aceita mais `--load-extension` na linha de comando; a extensã
 
 - 32 MB por arquivo convertido e 60 segundos por conversão, ambos com mensagem explícita.
 - PNG: 16.384 pixels por lado (limite do compositor do Chromium), recusado antes da captura.
+- TXT: página sem texto visível é recusada; texto acima de 32 MB é recusado antes de montar o arquivo.
 - Conversões concorrentes da mesma aba são recusadas.
 - Colisão de nome detectada pelo histórico de downloads do Chrome; arquivos baixados fora dele não são detectados.
 

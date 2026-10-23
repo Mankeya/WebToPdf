@@ -5,12 +5,12 @@
 <h1 align="center">WEBtoPDF</h1>
 
 <p align="center">
-  Converte a aba que você está vendo em PDF ou PNG, com prévia antes de salvar.<br>
+  Converte a aba que você está vendo em PDF, PNG ou texto, com prévia antes de salvar.<br>
   Tudo acontece no seu computador — nada é enviado para servidores.
 </p>
 
 <p align="center">
-  <sub>Versão 1.4.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.4.0">download</a></sub>
+  <sub>Versão 1.5.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.5.0">download</a></sub>
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 
 ## O que é
 
-Clicar no ícone do WEBtoPDF abre um **menu de formatos**. Escolher **PDF** ou **PNG** abre a prévia da página atual, **já convertida**. Você revisa o resultado e só então salva o arquivo — no PDF dá para ajustar a impressão antes. Texto e Markdown chegam nas próximas versões — um formato por versão, cada um testado antes de entrar.
+Clicar no ícone do WEBtoPDF abre um **menu de formatos**. Escolher **PDF**, **PNG** ou **Texto** abre a prévia da página atual, **já convertida**. Você revisa o resultado e só então salva o arquivo — no PDF dá para ajustar a impressão antes. Markdown chega na próxima versão — um formato por versão, cada um testado antes de entrar.
 
 O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **texto selecionável** e **links clicáveis**, respeitando o layout de impressão do site.
 
@@ -38,9 +38,10 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 | Recurso | Detalhe |
 |---|---|
-| **Menu de formatos** | Um clique no ícone abre o menu; PDF e PNG já estão disponíveis e os próximos formatos chegam um por versão |
+| **Menu de formatos** | Um clique no ícone abre o menu; PDF, PNG e Texto já estão disponíveis e os próximos formatos chegam um por versão |
 | **PDF paginado** | Motor de impressão do Chrome, com texto selecionável e links clicáveis |
 | **PNG da página inteira** | Captura a página toda com a aparência da tela, em uma única imagem |
+| **Texto em `.txt`** | Só o texto visível da página, em UTF-8 com BOM, pronto para o Bloco do Windows |
 | **Prévia imediata** | A aba atual já aparece convertida ao abrir a tela |
 | **Página por página** | Navegação, campo de página e zoom de 50% a 200% |
 | **Texto e links** | Camada de texto selecionável e links clicáveis |
@@ -48,13 +49,17 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 | **Página inteira** | Uma única folha contínua com a altura do conteúdo, sem paginação |
 | **Ajustes de impressão** | Orientação, margens, escala, fundos e cabeçalho/rodapé |
 | **Atualização sob demanda** | As alterações só entram no PDF ao clicar em **Atualizar prévia** |
-| **Nome automático** | `Título da página - AAAA-MM-DD_HH-mm-ss.pdf` (ou `.png`), sanitizado para o Windows |
+| **Nome automático** | `Título da página - AAAA-MM-DD_HH-mm-ss.pdf` (ou `.png`, `.txt`), sanitizado para o Windows |
 | **Nunca sobrescreve** | Nomes repetidos recebem sufixo, como `relatório (1).pdf` |
 | **Duas formas de salvar** | **Baixar** na pasta do navegador e **Salvar como…** com o diálogo nativo |
 | **Preferências lembradas** | Suas últimas opções de impressão sobrevivem ao reinício do navegador |
 | **Interface em português** | Toda a extensão, do botão ao mensaje de erro |
 
 <!-- novidades -->
+
+### v1.5.0 — 23/10/2026
+
+- Salvar a página atual como arquivo de texto (.txt) pelo menu de formatos.
 
 ### v1.4.0 — 23/10/2026
 
@@ -64,12 +69,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 ### v1.3.0 — 23/10/2026
 
 - Menu de formatos ao clicar no ícone: escolha o formato da conversão — o PDF já está disponível e os próximos formatos chegam versão a versão.
-
-### v1.2.0 — 22/10/2026
-
-- Páginas em modo escuro agora saem no PDF exatamente como aparecem na tela.
-- Cada atualização já vira release no GitHub, com o pacote para baixar e as novidades no README.
-- Mais tamanhos de papel, página inteira contínua e visual renovado na prévia.
 
 <!-- /novidades -->
 
@@ -88,10 +87,10 @@ Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O
 
 1. Abra qualquer página HTTP ou HTTPS.
 2. Clique no ícone **WEBtoPDF**.
-3. No menu de formatos, escolha **PDF** ou **PNG**. Os próximos formatos aparecem desabilitados, com o selo **Em breve**.
+3. No menu de formatos, escolha **PDF**, **PNG** ou **Texto**. O formato que ainda não chegou aparece desabilitado, com o selo **Em breve**.
 4. Uma nova aba abre com a prévia.
-5. Em **PDF**, ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor. Em **PNG**, a captura é sempre a página inteira e o único ajuste é o nome do arquivo.
-6. Clique em **Baixar PDF** (ou **Baixar PNG**) ou **Salvar como…**.
+5. Em **PDF**, ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor. Em **PNG**, a captura é sempre a página inteira e o único ajuste é o nome do arquivo. Em **Texto**, a prévia mostra o texto da página como ele está na tela e o único ajuste também é o nome do arquivo.
+6. Clique em **Baixar PDF** (ou **Baixar PNG**, **Baixar Texto**) ou **Salvar como…**.
 
 A aba original precisa continuar aberta enquanto você ajusta e regenera o documento. Se ela for fechada, a prévia já pronta continua disponível para download.
 
@@ -100,19 +99,19 @@ A aba original precisa continuar aberta enquanto você ajusta e regenera o docum
 O WEBtoPDF **não envia nada para fora do seu computador**.
 
 - Sem servidores, sem conta, sem telemetria, sem publicidade, sem análise de uso.
-- A extensão **não injeta scripts** nas páginas e **não lê o conteúdo** dos sites: a conversão usa o motor de impressão do Chrome, que já trata a página como conteúdo confiável.
+- A extensão **não injeta scripts, HTML ou CSS** nas páginas e não altera o que você está vendo. De conteúdo do site, ela lê apenas o necessário para o formato escolhido: no PDF e no PNG o trabalho é todo do motor de impressão e do compositor do Chrome; no **Texto**, uma única leitura do texto visível na tela (`innerText`) da aba que você escolheu converter — que fica só na sua máquina.
 - Sem acesso a cookies, histórico de navegação ou lista de permissões de sites.
 - Os únicos dados guardados são as suas **preferências de impressão**, no perfil local do navegador.
-- O PDF fica **apenas na memória** da aba da prévia e é descartado ao fechar ou recarregar a aba.
+- O documento convertido (PDF, imagem ou texto) fica **apenas na memória** da aba da prévia e é descartado ao fechar ou recarregar a aba.
 
 A extensão pede quatro permissões, todas com uso restrito e verificável:
 
 | Permissão | Para quê |
 |---|---|
 | `activeTab` | Ler URL e título da aba acionada (validação no menu e nome do arquivo) |
-| `debugger` | Usar o motor de impressão do Chrome (`Page.printToPDF`) |
+| `debugger` | Usar o motor de impressão, a captura de imagem e a leitura do texto visível do Chrome, sempre na aba que você escolheu |
 | `storage` | Lembrar as preferências de impressão |
-| `downloads` | Gravar o PDF e evitar sobrescrita de arquivos |
+| `downloads` | Gravar o arquivo escolhido e evitar sobrescrita de arquivos |
 
 Detalhes completos em [`docs/security.md`](docs/security.md) e [`SECURITY.md`](SECURITY.md).
 
@@ -122,6 +121,7 @@ Detalhes completos em [`docs/security.md`](docs/security.md) e [`SECURITY.md`](S
 - O DevTools aberto na aba original pode interromper a conversão.
 - O layout de impressão do site pode diferir do que você vê na tela.
 - Conteúdo que ainda não carregou por rolagem pode não aparecer.
+- No **Texto**, só entra o que está visível na página renderizada: texto escondido, atributos e iframes inacessíveis ficam de fora — e uma página só de imagens é recusada com mensagem clara.
 - Documentos acima de **32 MB** ou conversões acima de **60 segundos** são recusados com mensagem clara.
 - A detecção de nomes repetidos usa o histórico de downloads do Chrome; arquivos baixados por outros meios não são detectados. Use **Salvar como…** quando precisar de garantia.
 

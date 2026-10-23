@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 
-test('menu de formatos lista as opções com PDF e PNG disponíveis e os próximos formatos marcados', async ({ context, extensionId }) => {
+test('menu de formatos lista as opções com PDF, PNG e Texto disponíveis e os próximos formatos marcados', async ({ context, extensionId }) => {
   const popup = await context.newPage();
   const errors: string[] = [];
   popup.on('pageerror', (error) => errors.push(error.message));
@@ -10,13 +10,12 @@ test('menu de formatos lista as opções com PDF e PNG disponíveis e os próxim
   await expect(popup.getByRole('heading', { name: 'Converter a página atual' })).toBeVisible();
   await expect(popup.locator('[data-format="pdf"]')).toBeEnabled();
   await expect(popup.locator('[data-format="png"]')).toBeEnabled();
-  for (const format of ['txt', 'md']) {
-    await expect(popup.locator(`[data-format="${format}"]`)).toBeDisabled();
-  }
+  await expect(popup.locator('[data-format="txt"]')).toBeEnabled();
+  await expect(popup.locator('[data-format="md"]')).toBeDisabled();
   await expect(popup.locator('[data-format="png"]')).toContainText('PNG');
   await expect(popup.locator('[data-format="txt"]')).toContainText('Texto');
   await expect(popup.locator('[data-format="md"]')).toContainText('Markdown');
-  await expect(popup.getByText('Em breve')).toHaveCount(2);
+  await expect(popup.getByText('Em breve')).toHaveCount(1);
   expect(errors).toEqual([]);
 });
 

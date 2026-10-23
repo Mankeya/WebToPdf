@@ -43,12 +43,16 @@ const settingsTitle = element<HTMLElement>('#ajustes-title');
 const previewTitle = element<HTMLElement>('#preview-title');
 const imageContainer = element<HTMLElement>('#image-container');
 const previewImage = element<HTMLImageElement>('#preview-image');
+const textContainer = element<HTMLElement>('#text-container');
+const previewText = element<HTMLElement>('#preview-text');
 const printCards = [...document.querySelectorAll<HTMLElement>('.print-card')];
 
 const sourceTabId = parseSourceTabId(location.search);
 const format: ConversionFormat = parseFormatParam(location.search);
 const definition = findFormat(format) ?? findFormat('pdf')!;
 const isPdf = format === 'pdf';
+/** Formatos de texto: a prévia mostra o conteúdo extraído em `<pre>`. */
+const isText = format === 'txt';
 const formatLabel = definition.label;
 
 let busy = false;
@@ -179,7 +183,19 @@ function showImage(bytes: Uint8Array<ArrayBuffer>): void {
   if (imageUrl) URL.revokeObjectURL(imageUrl);
   imageUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
   previewImage.src = imageUrl;
+  textContainer.hidden = true;
   imageContainer.hidden = false;
+}
+
+/**
+ * Exibe o texto extraído sem passar por HTML: `textContent` em `<pre>` mantém
+ * a marcação da página como texto puro, sem interpretar.
+ */
+function showText(bytes: Uint8Array<ArrayBuffer>): void {
+  const text = new TextDecoder('utf-8').decode(bytes);
+  previewText.textContent = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  imageContainer.hidden = true;
+  textContainer.hidden = false;
 }
 
 async function loadPdfViewer(bytes: Uint8Array<ArrayBuffer>): Promise<number> {
@@ -202,7 +218,7 @@ async function convert(): Promise<void> {
   savedSettings = settings;
   busy = true;
   updateControls();
-  status.textContent = 'Convertendo a página e preparando a prévia…';
+  status.textContent = isText ? 'Extraindo texto…' : 'Convertendo a página e preparando a prévia…';
   controller = new AbortController();
   try {
     const result = await requestConversion(sourceTabId, format, settings, controller.signal);
@@ -212,6 +228,9 @@ async function convert(): Promise<void> {
     if (isPdf) {
       const pages = await loadPdfViewer(result.bytes);
       status.textContent = `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
+    } else if (isText) {
+      showText(result.bytes);
+      status.textContent = `${formatLabel} pronto.`;
     } else {
       showImage(result.bytes);
       status.textContent = `${formatLabel} pronto.`;
@@ -290,7 +309,7 @@ buildPaperOptions();
 if (!isPdf) {
   for (const card of printCards) card.hidden = true;
   settingsTitle.textContent = 'Ajustes';
-  previewTitle.textContent = 'Prévia da imagem';
+  previewTitle.textContent = isText ? 'Prévia do texto' : 'Prévia da imagem';
   downloadButton.textContent = `Baixar ${formatLabel}`;
   filename.value = `pagina.${definition.extension}`;
 }

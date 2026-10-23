@@ -15,7 +15,12 @@ export interface DownloadRequest {
 }
 
 /** MIME usado no blob; só influencia a aplicação associada ao abrir o arquivo. */
-const MIME_TYPES: Record<string, string> = { pdf: 'application/pdf', png: 'image/png' };
+const MIME_TYPES: Record<string, string> = {
+  pdf: 'application/pdf',
+  png: 'image/png',
+  // O charset evita que o Bloco do Windows abra arquivos acentuados como ANSI.
+  txt: 'text/plain;charset=UTF-8',
+};
 
 export function resolveDownloadFilename(requested: string, fallbackTitle: string, extension = 'pdf'): string {
   const trimmed = requested.trim().replace(new RegExp(`\\.${extension}$`, 'i'), '');

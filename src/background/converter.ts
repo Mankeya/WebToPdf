@@ -140,6 +140,76 @@ export async function convertTabToPdf(
   }
 }
 
+/** BOM UTF-8 (EF BB BF): faz o Bloco do Windows reconhecer acentuação. */
+const TXT_BOM = new Uint8Array([0xef, 0xbb, 0xbf]);
+/**
+ * Fatia de bytes convertida por vez em Base64. O múltiplo de 3 mantém cada
+ * fatia fechando em um número inteiro de caracteres Base64, para cada uma
+ * decodificar sozinha no lado da prévia (mesma regra de `chunkBase64`).
+ */
+const TXT_SLICE_BYTES = 3 * 64 * 1024;
+
+function toBinaryString(bytes: Uint8Array): string {
+  const parts: string[] = [];
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    const slice = bytes.subarray(offset, offset + 0x8000);
+    parts.push(String.fromCharCode(...slice));
+  }
+  return parts.join('');
+}
+
+/**
+ * Extrai o texto visível da página (innerText, na ordem da tela) e devolve em
+ * UTF-8 com BOM, sem cabeçalho e sem reestruturação.
+ *
+ * A leitura acontece pela própria sessão do debugger, na aba de origem, sem
+ * injeção de script no DOM e sem sair da máquina.
+ */
+export async function convertTabToTxt(
+  tabId: number,
+  onChunk: (base64: string, byteLength: number) => void,
+  signal: AbortSignal,
+): Promise<{ title: string; byteLength: number }> {
+  const { target, title, detach } = await openTabSession(tabId, signal, 'extração');
+  try {
+    const response: unknown = await chrome.debugger.sendCommand(target, 'Runtime.evaluate', {
+      expression: 'document.body ? document.body.innerText : ""',
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    if (typeof response !== 'object' || response === null || !('result' in response)
+      || typeof response.result !== 'object' || response.result === null || !('value' in response.result)
+      || typeof response.result.value !== 'string') {
+      throw new ConversionError('Não foi possível ler o texto desta página.');
+    }
+    signal.throwIfAborted();
+    const text = response.result.value;
+    if (text.trim().length === 0) {
+      throw new ConversionError('Nenhum texto visível para extrair nesta página.');
+    }
+    const bodyText = new TextEncoder().encode(text);
+    if (TXT_BOM.length + bodyText.length > MAX_FILE_BYTES) {
+      throw new ConversionError('O texto desta página excedeu o limite de 32 MB. Converta em PDF.');
+    }
+    const bytes = new Uint8Array(TXT_BOM.length + bodyText.length);
+    bytes.set(TXT_BOM, 0);
+    bytes.set(bodyText, TXT_BOM.length);
+
+    let byteLength = 0;
+    for (let offset = 0; offset < bytes.length; offset += TXT_SLICE_BYTES) {
+      signal.throwIfAborted();
+      const base64 = btoa(toBinaryString(bytes.subarray(offset, offset + TXT_SLICE_BYTES)));
+      const chunkBytes = base64ByteLength(base64);
+      byteLength += chunkBytes;
+      onChunk(base64, chunkBytes);
+    }
+    if (byteLength !== bytes.length) throw new ConversionError('Não foi possível montar o arquivo de texto.');
+    return { title: title || 'pagina', byteLength };
+  } finally {
+    await detach();
+  }
+}
+
 /**
  * Captura a página inteira como PNG, com a aparência da tela.
  *

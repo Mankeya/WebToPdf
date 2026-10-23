@@ -15,19 +15,19 @@ Até 45 caracteres. O sufixo explica a função sem repetir a marca.
 Até 132 caracteres:
 
 ```
-Converte a página atual em PDF ou PNG, com prévia. Ajustes de impressão. Processamento local, sem envio de dados a servidores.
+Converte a página atual em PDF, PNG ou .txt, com prévia. Ajustes de impressão. Processamento local, sem envio de dados a servidores.
 ```
 
-(126 caracteres)
+(132 caracteres)
 
 ## Descrição detalhada
 
 ```markdown
-WEBtoPDF transforma a aba que você está vendo em um PDF ou em uma imagem da
-página inteira, com prévia antes de salvar.
+WEBtoPDF transforma a aba que você está vendo em um PDF, em uma imagem da
+página inteira ou em um arquivo de texto, com prévia antes de salvar.
 
-Clicar no ícone abre o menu de formatos. Escolhendo PDF ou PNG, a prévia da
-página atual abre já convertida. Você revisa o resultado e só então baixa o
+Clicar no ícone abre o menu de formatos. Escolhendo PDF, PNG ou Texto, a prévia
+da página atual abre já convertida. Você revisa o resultado e só então baixa o
 arquivo. Novos formatos de conversão serão adicionados versão a versão.
 
 **No PDF, você pode ajustar**
@@ -41,13 +41,15 @@ arquivo. Novos formatos de conversão serão adicionados versão a versão.
 
 As alterações só entram no PDF quando você clica em **Atualizar prévia**, então
 você sempre vê exatamente o que vai ser salvo. O PNG é sempre a página inteira,
-com a aparência da tela.
+com a aparência da tela. O Texto é o que está visível na página, gravado em
+UTF-8 com BOM para abrir com a acentuação certa no Bloco do Windows.
 
 **Destaques**
 
 - Prévia paginada do PDF com navegação e zoom
 - Texto selecionável e links clicáveis, como em qualquer PDF
 - PNG da página inteira em uma única imagem
+- Texto da página em um arquivo `.txt`, pronto para editar
 - Nome de arquivo automático com data e hora, sanitizado para o Windows
 - Nunca sobrescreve um arquivo existente
 - Botão **Salvar como…** para escolher o destino
