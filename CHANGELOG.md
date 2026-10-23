@@ -4,6 +4,19 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.5.0] — 2026-10-23
+
+### Adicionado
+
+- **Texto no menu de formatos**: escolher **Texto** na prévia extrai só o texto visível da página, na ordem em que ele aparece na tela, e o salva em `.txt`. A prévia mostra o conteúdo em bloco monoespaçado; os ajustes de impressão continuam valendo só para o PDF.
+- O arquivo de texto é gravado em UTF-8 com BOM, para o Bloco do Windows abrir acentuação correta sem configuração.
+- Páginas sem nenhum texto visível são recusadas com mensagem clara, sem gerar arquivo vazio.
+
+### Técnico
+
+- Extração via `Runtime.evaluate` sobre `innerText` na sessão do debugger já autorizada, sem injeção de script na página; `docs/security.md` agora descreve com precisão o que é lido da aba por formato.
+- A prévia ganhou modo de texto (`<pre>` com `textContent`), e as mensagens da porta de conversão passaram a ser nomeadas por formato.
+
 ## [1.4.0] — 2026-10-23
 
 ### Adicionado

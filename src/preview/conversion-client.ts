@@ -8,6 +8,35 @@ export interface ConvertedFile {
   title: string;
 }
 
+/**
+ * Texto das mensagens do cliente, por formato. PDF e PNG diferem no gênero e
+ * no termo; os formatos de texto compartilham a mesma redação.
+ */
+function clientMessages(format: ConversionFormat): { inconsistent: string; tooLarge: string; invalid: string; failed: string } {
+  if (format === 'pdf') {
+    return {
+      inconsistent: 'O PDF recebido do navegador estava inconsistente.',
+      tooLarge: 'O PDF excedeu o limite inicial de 32 MB.',
+      invalid: 'O Chrome não retornou um PDF válido.',
+      failed: 'Não foi possível receber o PDF.',
+    };
+  }
+  if (format === 'png') {
+    return {
+      inconsistent: 'A imagem recebida do navegador estava inconsistente.',
+      tooLarge: 'A imagem excedeu o limite inicial de 32 MB.',
+      invalid: 'O Chrome não retornou uma imagem válida.',
+      failed: 'Não foi possível receber a imagem.',
+    };
+  }
+  return {
+    inconsistent: 'O texto recebido do navegador estava inconsistente.',
+    tooLarge: 'O texto excedeu o limite inicial de 32 MB.',
+    invalid: 'O Chrome não retornou um texto válido.',
+    failed: 'Não foi possível receber o texto.',
+  };
+}
+
 function decodeBase64(data: string): Uint8Array<ArrayBuffer> {
   const binary = atob(data);
   const bytes = new Uint8Array(binary.length);
@@ -24,6 +53,7 @@ export function requestConversion(
   signal: AbortSignal,
 ): Promise<ConvertedFile> {
   return new Promise((resolve, reject) => {
+    const messages = clientMessages(format);
     const port = chrome.runtime.connect({ name: CONVERSION_PORT });
     const chunks: Uint8Array<ArrayBuffer>[] = [];
     let total = 0;
@@ -56,10 +86,10 @@ export function requestConversion(
           // O tamanho declarado precisa bater com o conteúdo, caso contrário o
           // arquivo montado não corresponde ao que o Chrome entregou.
           if (expected !== null && expected !== decoded.length) {
-            throw new Error(format === 'pdf' ? 'O PDF recebido do navegador estava inconsistente.' : 'A imagem recebida do navegador estava inconsistente.');
+            throw new Error(messages.inconsistent);
           }
           total += decoded.length;
-          if (total > MAX_FILE_BYTES) throw new Error(format === 'pdf' ? 'O PDF excedeu o limite inicial de 32 MB.' : 'A imagem excedeu o limite inicial de 32 MB.');
+          if (total > MAX_FILE_BYTES) throw new Error(messages.tooLarge);
           chunks.push(decoded);
         } else if (message.type === 'complete' && 'title' in message && typeof message.title === 'string'
           && 'byteLength' in message && message.byteLength === total && total > 0) {
@@ -72,12 +102,12 @@ export function requestConversion(
           // A assinatura confirma que o Chrome devolveu o tipo combinado com o
           // menu, em vez de outro arquivo ou uma resposta de erro em HTML.
           if (!matchesFileSignature(format, bytes)) {
-            throw new Error(format === 'pdf' ? 'O Chrome não retornou um PDF válido.' : 'O Chrome não retornou uma imagem válida.');
+            throw new Error(messages.invalid);
           }
           finish(undefined, { bytes, title: message.title });
         }
       } catch (error) {
-        finish(error instanceof Error ? error : new Error(format === 'pdf' ? 'Não foi possível receber o PDF.' : 'Não foi possível receber a imagem.'));
+        finish(error instanceof Error ? error : new Error(messages.failed));
       }
     });
     if (signal.aborted) cancel();

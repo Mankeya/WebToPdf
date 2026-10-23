@@ -7,16 +7,21 @@ as perguntas antes de elas serem feitas.
 ## Justificativa da permissão `debugger`
 
 > A extensão usa a permissão `debugger` exclusivamente para invocar
-> `Page.printToPDF` do protocolo DevTools na aba que o usuário está convertendo.
-> Esse é o único mecanismo do Chrome que produz um PDF paginado com texto
-> selecionável, links e o layout de impressão do próprio site.
+> `Page.printToPDF`, `Page.captureScreenshot` e uma avaliação única de
+> `document.body.innerText` do protocolo DevTools, sempre na aba que o usuário
+> está convertendo. `Page.printToPDF` é o único mecanismo do Chrome que produz
+> um PDF paginado com texto selecionável, links e o layout de impressão do
+> próprio site; `Page.captureScreenshot` é o mecanismo nativo de captura da
+> página inteira; e a leitura de `innerText` existe apenas para o formato
+> "Texto", que salva o texto visível da página em `.txt`.
 >
-> A extensão **não injeta scripts na página**, **não lê o DOM**, **não acessa
-> cookies** e **não acessa o histórico de navegação**. Ela não pede
-> `host_permissions` nem `<all_urls>`, portanto não tem acesso permanente a
-> nenhum site. O acesso ocorre apenas na aba que o usuário aciona, apenas
-> durante a conversão, e a sessão é encerrada logo em seguida, inclusive em
-> caso de erro ou cancelamento.
+> A extensão **não injeta scripts, HTML ou CSS na página**, **não altera o que
+> é exibido**, **não acessa cookies** e **não acessa o histórico de navegação**.
+> Ela não pede `host_permissions` nem `<all_urls>`, portanto não tem acesso
+> permanente a nenhum site. O acesso ocorre apenas na aba que o usuário aciona,
+> apenas durante a conversão, e a sessão é encerrada logo em seguida, inclusive
+> em caso de erro ou cancelamento. Nenhum conteúdo lido é transmitido, logado
+> ou gravado fora do arquivo que o usuário escolhe baixar.
 >
 > A alternativa seria reimplementar a paginação e o motor de impressão, o que
 > reduziria a qualidade do resultado e exigiria ler o conteúdo da página.
@@ -27,7 +32,7 @@ as perguntas antes de elas serem feitas.
 |---|---|
 | `activeTab` | Ler o título da aba para nomear o arquivo e confirmar que a URL é HTTP ou HTTPS. Concedida somente quando o usuário clica no ícone. |
 | `storage` | Guardar as preferências de impressão (papel, orientação, margens, escala, fundos, cabeçalho/rodapé) em `chrome.storage.local`. Nenhum dado de página é armazenado. |
-| `downloads` | Gravar o PDF em disco, abrir o diálogo "Salvar como…" e verificar se já existe um arquivo com o mesmo nome para não sobrescrevê-lo. |
+| `downloads` | Gravar o arquivo convertido (PDF, PNG ou TXT) em disco, abrir o diálogo "Salvar como…" e verificar se já existe um arquivo com o mesmo nome para não sobrescrevê-lo. |
 
 A extensão **não** pede: `tabs`, `host_permissions`, `content_scripts`,
 `cookies`, `history`, `webRequest`, `webNavigation`, `nativeMessaging`,
@@ -94,9 +99,12 @@ pronto, sem interface, e é a mesma base de código usada pelo próprio
 "Imprimir em PDF" do Chrome.
 
 **"A extensão acessa o conteúdo das páginas?"**
-Não. Ela não injeta scripts, não lê o DOM e não pede acesso a hosts. O
-conteúdo é renderizado pelo motor de impressão do próprio Chrome, que já trata
-a página como conteúdo confiável do ponto de vista do usuário.
+Só o necessário para o formato escolhido, e apenas na conversão que o usuário
+dispara. No PDF e no PNG o conteúdo é processado pelo motor de impressão e pelo
+compositor do próprio Chrome, sem leitura pela extensão. No formato "Texto" ela
+lê uma única vez o texto visível da página (`innerText`) para gravar o `.txt` —
+sem injetar scripts, sem pedir acesso a hosts e sem transmitir, registrar ou
+guardar esse texto em outro lugar que não o arquivo baixado pelo usuário.
 
 **"Os dados ficam armazenados?"**
 Somente as preferências de impressão, em `chrome.storage.local`. O PDF fica na
