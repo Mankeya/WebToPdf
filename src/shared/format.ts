@@ -16,7 +16,7 @@ export interface FormatDefinition {
 
 export const CONVERSION_FORMATS: readonly FormatDefinition[] = Object.freeze([
   { id: 'pdf', label: 'PDF', description: 'Documento pronto para ler e imprimir', extension: 'pdf', available: true },
-  { id: 'png', label: 'PNG', description: 'Imagem da página inteira', extension: 'png', available: false },
+  { id: 'png', label: 'PNG', description: 'Imagem da página inteira', extension: 'png', available: true },
   { id: 'txt', label: 'Texto', description: 'Só o texto da página, em .txt', extension: 'txt', available: false },
   { id: 'md', label: 'Markdown', description: 'Texto estruturado, em .md', extension: 'md', available: false },
 ]);

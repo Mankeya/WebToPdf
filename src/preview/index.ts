@@ -1,12 +1,12 @@
 import { DEFAULT_PRINT_SETTINGS, PAPER_SIZES, parsePrintSettings, resolvePaperSizeOriented } from '../shared/settings';
 import type { PaperSize, PrintSettings } from '../shared/settings';
-import { createPdfFilename } from '../shared/filename';
-import { isFormatAvailable } from '../shared/format';
+import { createConversionFilename } from '../shared/filename';
+import { findFormat, isFormatAvailable } from '../shared/format';
 import type { ConversionFormat } from '../shared/format';
 import { parseFormatParam, parseSourceTabId } from '../shared/preview-url';
 import { requestConversion } from './conversion-client';
 import { resolveDownloadFilename, startDownload } from './downloader';
-import { PdfViewer } from './pdf-viewer';
+import type { PdfViewer } from './pdf-viewer';
 import './styles.css';
 
 function element<T extends HTMLElement>(selector: string): T {
@@ -39,16 +39,30 @@ const next = element<HTMLButtonElement>('#next-page');
 const pageNumber = element<HTMLInputElement>('#page-number');
 const pageCount = element<HTMLElement>('#page-count');
 const zoom = element<HTMLSelectElement>('#zoom');
-const viewer = new PdfViewer(element('#pdf-container'));
+const settingsTitle = element<HTMLElement>('#ajustes-title');
+const previewTitle = element<HTMLElement>('#preview-title');
+const imageContainer = element<HTMLElement>('#image-container');
+const previewImage = element<HTMLImageElement>('#preview-image');
+const printCards = [...document.querySelectorAll<HTMLElement>('.print-card')];
 
 const sourceTabId = parseSourceTabId(location.search);
 const format: ConversionFormat = parseFormatParam(location.search);
+const definition = findFormat(format) ?? findFormat('pdf')!;
+const isPdf = format === 'pdf';
+const formatLabel = definition.label;
+
 let busy = false;
 let controller: AbortController | null = null;
 let documentBytes: Uint8Array<ArrayBuffer> | null = null;
 let documentTitle = '';
 let filenameEdited = false;
 let savedSettings: PrintSettings = { ...DEFAULT_PRINT_SETTINGS };
+/**
+ * O PDF.js só é necessário para o formato PDF; em outros formatos (PNG) a
+ * prévia mostra uma imagem nativa e o bundle do PDF.js não chega a carregar.
+ */
+let viewer: PdfViewer | null = null;
+let imageUrl: string | null = null;
 
 const PAPER_SHAPE_HEIGHT = 34;
 
@@ -130,18 +144,20 @@ function readSettings(): PrintSettings | null {
 }
 
 function updateControls(): void {
-  controls.hidden = viewer.pageCount === 0;
-  previous.disabled = busy || viewer.pageNumber <= 1;
-  next.disabled = busy || viewer.pageNumber >= viewer.pageCount;
+  // Só o PDF tem navegação de páginas; os demais formatos ficam sem controles.
+  const totalPages = viewer?.pageCount ?? 0;
+  controls.hidden = totalPages === 0;
+  previous.disabled = busy || (viewer?.pageNumber ?? 1) <= 1;
+  next.disabled = busy || (viewer?.pageNumber ?? 1) >= totalPages;
   pageNumber.disabled = busy;
   zoom.disabled = busy;
-  const hasPdf = documentBytes !== null;
-  downloadButton.disabled = busy || !hasPdf;
-  saveAsButton.disabled = busy || !hasPdf;
+  const hasDocument = documentBytes !== null;
+  downloadButton.disabled = busy || !hasDocument;
+  saveAsButton.disabled = busy || !hasDocument;
   updateButton.disabled = busy || sourceTabId === null;
-  pageNumber.value = String(viewer.pageNumber);
-  pageNumber.max = String(viewer.pageCount);
-  pageCount.textContent = `de ${viewer.pageCount}`;
+  pageNumber.value = String(viewer?.pageNumber ?? 1);
+  pageNumber.max = String(totalPages);
+  pageCount.textContent = `de ${totalPages}`;
   renderPaperState();
 }
 
@@ -158,6 +174,24 @@ function updateSetting(patch: Partial<PrintSettings>): void {
   markPendingChanges();
 }
 
+/** Exibe a imagem convertida no container próprio, sem PDF.js. */
+function showImage(bytes: Uint8Array<ArrayBuffer>): void {
+  if (imageUrl) URL.revokeObjectURL(imageUrl);
+  imageUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+  previewImage.src = imageUrl;
+  imageContainer.hidden = false;
+}
+
+async function loadPdfViewer(bytes: Uint8Array<ArrayBuffer>): Promise<number> {
+  if (!viewer) {
+    const container = element('#pdf-container');
+    const module = await import('./pdf-viewer');
+    viewer = new module.PdfViewer(container);
+  }
+  await viewer.load(bytes);
+  return viewer.pageCount;
+}
+
 async function convert(): Promise<void> {
   if (busy || sourceTabId === null) return;
   const settings = readSettings();
@@ -172,12 +206,16 @@ async function convert(): Promise<void> {
   controller = new AbortController();
   try {
     const result = await requestConversion(sourceTabId, format, settings, controller.signal);
-    await viewer.load(result.bytes);
     documentBytes = result.bytes;
     documentTitle = result.title;
-    if (!filenameEdited) filename.value = createPdfFilename(result.title);
-    const pages = viewer.pageCount;
-    status.textContent = `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
+    if (!filenameEdited) filename.value = createConversionFilename(result.title, definition.extension);
+    if (isPdf) {
+      const pages = await loadPdfViewer(result.bytes);
+      status.textContent = `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
+    } else {
+      showImage(result.bytes);
+      status.textContent = `${formatLabel} pronto.`;
+    }
   } catch (error) {
     status.textContent = `${error instanceof Error ? error.message : 'Não foi possível gerar a prévia.'}${documentBytes ? ' A prévia anterior foi mantida.' : ''}`;
   } finally {
@@ -188,7 +226,7 @@ async function convert(): Promise<void> {
 }
 
 async function navigate(page: number): Promise<void> {
-  if (busy || !documentBytes) return;
+  if (busy || !documentBytes || !viewer) return;
   busy = true;
   updateControls();
   try {
@@ -201,16 +239,16 @@ async function navigate(page: number): Promise<void> {
   }
 }
 
-async function downloadPdf(saveAs: boolean): Promise<void> {
+async function downloadFile(saveAs: boolean): Promise<void> {
   if (busy || !documentBytes) return;
-  const name = filename.value.trim() || createPdfFilename(documentTitle);
-  const safeName = resolveDownloadFilename(name, documentTitle);
+  const name = filename.value.trim() || createConversionFilename(documentTitle, definition.extension);
+  const safeName = resolveDownloadFilename(name, documentTitle, definition.extension);
   try {
     busy = true;
     updateControls();
-    status.textContent = saveAs ? 'Abrindo diálogo de salvamento…' : 'Baixando PDF…';
-    const outcome = await startDownload({ bytes: documentBytes, filename: safeName, saveAs });
-    if (outcome.status === 'complete') status.textContent = 'PDF salvo com sucesso.';
+    status.textContent = saveAs ? 'Abrindo diálogo de salvamento…' : `Baixando ${formatLabel}…`;
+    const outcome = await startDownload({ bytes: documentBytes, filename: safeName, saveAs, extension: definition.extension });
+    if (outcome.status === 'complete') status.textContent = `${formatLabel} salvo com sucesso.`;
     else if (outcome.status === 'cancelled') status.textContent = 'O download foi cancelado.';
     else status.textContent = `O download foi interrompido: ${outcome.reason}.`;
   } catch (error) {
@@ -245,6 +283,18 @@ async function persistSettings(): Promise<void> {
 
 buildPaperOptions();
 
+/**
+ * Ajustes de impressão só existem no PDF. Em outros formatos a barra lateral
+ * fica com o nome do arquivo, que é o único ajuste disponível antes de baixar.
+ */
+if (!isPdf) {
+  for (const card of printCards) card.hidden = true;
+  settingsTitle.textContent = 'Ajustes';
+  previewTitle.textContent = 'Prévia da imagem';
+  downloadButton.textContent = `Baixar ${formatLabel}`;
+  filename.value = `pagina.${definition.extension}`;
+}
+
 filename.addEventListener('input', () => { filenameEdited = true; });
 updateButton.addEventListener('click', () => { void convert(); });
 for (const button of orientationButtons) {
@@ -270,16 +320,21 @@ backgrounds.addEventListener('change', () => {
 headerFooter.addEventListener('change', () => {
   updateSetting({ displayHeaderFooter: headerFooter.checked });
 });
-previous.addEventListener('click', () => void navigate(viewer.pageNumber - 1));
-next.addEventListener('click', () => void navigate(viewer.pageNumber + 1));
+previous.addEventListener('click', () => void navigate((viewer?.pageNumber ?? 1) - 1));
+next.addEventListener('click', () => void navigate((viewer?.pageNumber ?? 1) + 1));
 pageNumber.addEventListener('change', () => void navigate(pageNumber.valueAsNumber));
-zoom.addEventListener('change', () => { viewer.zoom = Number(zoom.value); void navigate(viewer.pageNumber); });
-downloadButton.addEventListener('click', () => void downloadPdf(false));
-saveAsButton.addEventListener('click', () => void downloadPdf(true));
+zoom.addEventListener('change', () => {
+  if (!viewer) return;
+  viewer.zoom = Number(zoom.value);
+  void navigate(viewer.pageNumber);
+});
+downloadButton.addEventListener('click', () => void downloadFile(false));
+saveAsButton.addEventListener('click', () => void downloadFile(true));
 window.addEventListener('pagehide', () => {
   controller?.abort();
   documentBytes = null;
-  void viewer.destroy().catch(() => undefined);
+  if (imageUrl) URL.revokeObjectURL(imageUrl);
+  void viewer?.destroy().catch(() => undefined);
 }, { once: true });
 
 await loadSavedSettings();

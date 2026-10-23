@@ -3,7 +3,7 @@ import { isFormatAvailable } from '../shared/format';
 import { CONVERSION_PORT, CONVERSION_TIMEOUT_MS, ConversionError } from '../shared/conversion';
 import type { ConversionEvent } from '../shared/conversion';
 import { parsePrintSettings } from '../shared/settings';
-import { convertTabToPdf } from './converter';
+import { convertTabToPdf, convertTabToPng } from './converter';
 
 const activeTabs = new Set<number>();
 
@@ -88,11 +88,19 @@ chrome.runtime.onConnect.addListener((port) => {
     }
     activeTabs.add(tabId);
     const timeout = setTimeout(() => controller.abort(new ConversionError('A conversão excedeu 60 segundos. Tente novamente com uma página menor.')), CONVERSION_TIMEOUT_MS);
-    void convertTabToPdf(tabId, settings, (data, byteLength) => send({ type: 'chunk', data, byteLength }), controller.signal)
+    // Só o PDF usa as configurações de impressão; os demais formatos as
+    // recebem no mesmo formato de contrato, mas as ignoram.
+    const convert = requestedFormat === 'pdf'
+      ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToPdf(tabId, settings, onChunk, signal)
+      : (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToPng(tabId, onChunk, signal);
+    void convert((data, byteLength) => send({ type: 'chunk', data, byteLength }), controller.signal)
       .then((result) => send({ type: 'complete', ...result }))
       .catch((error: unknown) => {
         const reason: unknown = controller.signal.aborted ? controller.signal.reason : error;
-        send({ type: 'error', message: reason instanceof ConversionError ? reason.message : 'Não foi possível converter a página. A impressão pode ter sido cancelada; tente novamente com o DevTools fechado.' });
+        const fallback = requestedFormat === 'pdf'
+          ? 'Não foi possível converter a página. A impressão pode ter sido cancelada; tente novamente com o DevTools fechado.'
+          : 'Não foi possível capturar a página; tente novamente com o DevTools fechado.';
+        send({ type: 'error', message: reason instanceof ConversionError ? reason.message : fallback });
       })
       .finally(() => {
         clearTimeout(timeout);

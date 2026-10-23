@@ -15,13 +15,13 @@ npm run package
 3. **Carregar sem compactação** → selecione a pasta `dist` (não o `.zip`).
 4. Fixe o ícone na barra.
 
-> Para validar exatamente o que será publicado, descompacte `webtopdf-1.0.0.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
+> Para validar exatamente o que será publicado, descompacte `webtopdf-1.4.0.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
 
 ## Resultado esperado por etapa
 
 | # | Ação | Resultado esperado |
 |---|---|---|
-| 1 | Abra `https://example.com`, clique no ícone e escolha **PDF** no menu | O menu lista os formatos (PDF ativo; PNG, Texto e Markdown com **"Em breve"**) e abre nova aba com a prévia; status **"PDF pronto"** |
+| 1 | Abra `https://example.com`, clique no ícone e escolha **PDF** no menu | O menu lista os formatos (PDF e PNG ativos; Texto e Markdown com **"Em breve"**) e abre nova aba com a prévia; status **"PDF pronto"** |
 | 2 | Observe a barra superior durante a conversão | Chrome pode mostrar aviso temporário de depuração; some ao terminar |
 | 3 | Verifique o texto | Clique e arraste sobre o PDF: o texto é selecionável |
 | 4 | Verifique os links | O link do rodapé abre em nova aba |
@@ -36,16 +36,19 @@ npm run package
 | 13 | Feche a aba original e tente **Atualizar prévia** | Mensagem de que a página original não está disponível; o PDF anterior continua baixável |
 | 14 | Feche e reabra a prévia | Preferências de impressão preservadas; PDF descartado |
 | 15 | Abra `chrome://extensions` e clique no ícone | Mensagem de página não compatível no próprio menu, sem abrir a prévia |
-| 16 | Com o menu aberto, tente clicar em **PNG**, **Texto** ou **Markdown** | Botões desabilitados com selo **"Em breve"**; nenhuma aba é aberta |
+| 16 | Com o menu aberto, tente clicar em **Texto** ou **Markdown** | Botões desabilitados com selo **"Em breve"**; nenhuma aba é aberta |
 | 17 | Repita a conversão na mesma aba rapidamente | Sem conversões concorrentes; aviso de que a página já está sendo convertida |
 | 18 | Abra o DevTools na aba original e converta | Mensagem Orientando a fechar o DevTools |
 | 19 | Converta uma página com mais de 20 MB de conteúdo | Limite de 32 MB com mensagem clara |
+| 20 | Escolha **PNG** no menu | Prévia mostra a imagem da página inteira; os cards de ajustes de impressão não aparecem, só o nome do arquivo |
+| 21 | Clique em **Baixar PNG** de novo após o primeiro download | Não sobrescreve: cria `nome (1).png`; o arquivo baixado abre como imagem válida |
+| 22 | Converta uma página com mais de 16.384 px de altura em **PNG** | Recusa com mensagem de que a página é grande demais para virar uma imagem, sugerindo PDF |
 
 ## Verificações de privacidade
 
 - Nenhuma requisição de rede para domínios externos durante a conversão (verificar em `chrome://net-export` ou pela aba Network do DevTools da própria extensão).
-- O PDF não aparece no histórico de downloads com URL externa.
-- Nenhum arquivo é criado no disco além do PDF baixado.
+- O arquivo convertido não aparece no histórico de downloads com URL externa.
+- Nenhum arquivo é criado no disco além do PDF ou PNG baixado.
 
 ## Verificações de segurança
 

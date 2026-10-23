@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPdfFilename, sanitizeTitle } from '../../src/shared/filename';
+import { createConversionFilename, sanitizeTitle } from '../../src/shared/filename';
 
 describe('sanitizeTitle', () => {
   it('remove caminhos, caracteres inválidos e controles', () => {
@@ -35,13 +35,19 @@ describe('sanitizeTitle', () => {
   });
 });
 
-describe('createPdfFilename', () => {
+describe('createConversionFilename', () => {
   it('usa data e horário locais sem caracteres inválidos do Windows', () => {
     const date = new Date(2026, 9, 21, 9, 4, 2);
-    expect(createPdfFilename('Meu relatório', date)).toBe('Meu relatório - 2026-10-21_09-04-02.pdf');
+    expect(createConversionFilename('Meu relatório', 'pdf', date)).toBe('Meu relatório - 2026-10-21_09-04-02.pdf');
   });
 
-  it('rejeita datas inválidas', () => {
-    expect(() => createPdfFilename('Teste', new Date('invalid'))).toThrow(RangeError);
+  it('aplica a extensão do formato escolhido', () => {
+    const date = new Date(2026, 9, 21, 9, 4, 2);
+    expect(createConversionFilename('Meu relatório', 'png', date)).toBe('Meu relatório - 2026-10-21_09-04-02.png');
+  });
+
+  it('rejeita datas inválidas em qualquer formato', () => {
+    expect(() => createConversionFilename('Teste', 'pdf', new Date('invalid'))).toThrow(RangeError);
+    expect(() => createConversionFilename('Teste', 'png', new Date('invalid'))).toThrow(RangeError);
   });
 });

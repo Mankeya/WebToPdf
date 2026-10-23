@@ -14,6 +14,8 @@ const REQUIRED_CSP_DIRECTIVES = {
 };
 // `data:` é necessário em img-src e font-src para recursos embutidos no PDF.
 const DATA_ALLOWED_IN = new Set(['img-src', 'font-src']);
+// `blob:` em img-src exibe a prévia PNG convertida localmente, sem rede.
+const BLOB_ALLOWED_IN = new Set(['img-src']);
 const FORBIDDEN_CSP_SOURCES = ["'unsafe-eval'", "'unsafe-inline'", '*', 'http:', 'https:'];
 
 const target = resolve(process.argv[2] ?? 'dist/manifest.json');
@@ -60,7 +62,8 @@ if (typeof csp !== 'string' || csp.length === 0) {
     for (const value of values) {
       if (directive === 'style-src') continue;
       if (value === 'data:' && DATA_ALLOWED_IN.has(directive)) continue;
-      if (FORBIDDEN_CSP_SOURCES.includes(value) || value === 'data:') problems.push(`CSP ${directive} permite ${value}`);
+      if (value === 'blob:' && BLOB_ALLOWED_IN.has(directive)) continue;
+      if (FORBIDDEN_CSP_SOURCES.includes(value) || value === 'data:' || value === 'blob:') problems.push(`CSP ${directive} permite ${value}`);
     }
   }
   const scriptSrc = directives.get('script-src') ?? [];
