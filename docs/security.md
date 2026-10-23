@@ -6,7 +6,7 @@ Revisão aplicada à extensão WEBtoPDF. O objetivo é reduzir a superfície de 
 
 | Permissão | Necessidade | Justificativa |
 |---|---|---|
-| `activeTab` | Ler URL e título da aba quando o usuário clica no ícone | Evita `tabs` e `host_permissions`; só vale na aba acionada |
+| `activeTab` | Ler URL e título da aba quando o usuário clica no ícone | Evita `tabs` e `host_permissions`; só vale na aba acionada. O menu usa a URL para recusar páginas internas antes de abrir a prévia |
 | `debugger` | Executar `Page.printToPDF` na aba original | Exige o motor de impressão do Chrome; nenhuma alternativa local existe |
 | `storage` | Persistir preferências de impressão | `chrome.storage.local`, sem sincronização em nuvem |
 | `downloads` | Salvar o PDF e detectar colisões de nome | Necessário para rastrear a conclusão do download |
@@ -41,8 +41,8 @@ O PDF.js foi verificado: as versões empacotadas (`pdf.mjs` e `pdf.worker.min.mj
 
 | Risco | Mitigação |
 |---|---|
-| Página maliciosa enviar comandos à extensão | A porta só aceita conexões da própria página `preview.html`; `sourceTabId` e configurações são validados no service worker |
-| Conversão de aba arbitrária | A porta rejeita `sourceTabId` ausente, inválido ou igual à própria aba da prévia |
+| Página maliciosa enviar comandos à extensão | A porta só aceita conexões da própria página `preview.html`; `sourceTabId`, formato e configurações são validados no service worker, e o formato precisa coincidir com o da URL da prévia e estar disponível no registro |
+| Conversão de aba arbitrária | A porta rejeita `sourceTabId` ausente, inválido ou igual à própria aba da prévia; o menu só abre a prévia em abas `http`/`https` quando a URL está legível |
 | Nome de arquivo malicioso | `sanitizeTitle` remove caracteres inválidos do Windows, caracteres de controle, sequências de pontos e nomes reservados (`CON`, `NUL`, `COM1`…) |
 | Nome virando caminho relativo | Um nome como `../../etc/passwd` perde as barras e os pontos duplos, virando `etc passwd` |
 | Sobrescrita de arquivo | O nome livre é escolhido consultando o histórico de downloads antes de gravar |
@@ -88,6 +88,6 @@ downloads do Chrome. Nenhum byte do PDF sai do perfil do navegador.
 ## Verificações automatizadas
 
 - `npm test` cobre as regras puras: sanitização de nomes, resolução de nome final, seleção de nome livre, validação de preferências e de URLs.
-- `npm run test:e2e` cobre o fluxo real em Chromium: impressão, prévia, navegação de páginas, ajustes, persistência e download com verificação do arquivo e da ausência de sobrescrita.
+- `npm run test:e2e` cobre o fluxo real em Chromium: menu de formatos, impressão, prévia, navegação de páginas, ajustes, persistência e download com verificação do arquivo e da ausência de sobrescrita.
 - `npm run verify:manifest` bloqueia permissões fora da lista aprovada, chaves proibidas no manifesto (`host_permissions`, `content_scripts`, `web_accessible_resources`, `externally_connectable`) e uma CSP afrouxada. O script roda no CI, no build local e pode ser usado como gate de pull request.
 - A branch `main` exige os três checks do CI antes de aceitar um merge.

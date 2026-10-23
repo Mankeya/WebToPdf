@@ -1,5 +1,6 @@
 import { CONVERSION_PORT, CONVERSION_TIMEOUT_MS, MAX_PDF_BYTES, base64ByteLength } from '../shared/conversion';
 import type { ConversionRequest } from '../shared/conversion';
+import type { ConversionFormat } from '../shared/format';
 import type { PrintSettings } from '../shared/settings';
 
 export interface ConvertedPdf {
@@ -18,7 +19,12 @@ function decodeBase64(data: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-export function requestConversion(sourceTabId: number, settings: PrintSettings, signal: AbortSignal): Promise<ConvertedPdf> {
+export function requestConversion(
+  sourceTabId: number,
+  format: ConversionFormat,
+  settings: PrintSettings,
+  signal: AbortSignal,
+): Promise<ConvertedPdf> {
   return new Promise((resolve, reject) => {
     const port = chrome.runtime.connect({ name: CONVERSION_PORT });
     const chunks: Uint8Array<ArrayBuffer>[] = [];
@@ -76,7 +82,7 @@ export function requestConversion(sourceTabId: number, settings: PrintSettings, 
     });
     if (signal.aborted) cancel();
     else {
-      const request: ConversionRequest = { type: 'convert', sourceTabId, settings };
+      const request: ConversionRequest = { type: 'convert', sourceTabId, format, settings };
       port.postMessage(request);
     }
   });

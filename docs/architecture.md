@@ -3,7 +3,7 @@
 ## Decisões
 
 1. **Manifest V3 + TypeScript + Vite**: build local, sem framework de interface ou backend.
-2. **Service worker**: recebe o clique e fixa o ID da aba original antes de abrir a prévia. Não depende da memória do worker como armazenamento durável de jobs; o estado de conversão vive na aba da prévia.
+2. **Menu de formatos + service worker**: o clique no ícone abre um popup (`popup.html`) que lista o registro de formatos (`src/shared/format.ts`, com um flag `available` por formato) e abre a prévia com `sourceTabId` e `format` na URL. O menu só recusa a aba quando a URL está legível e é incompatível; havendo dúvida, abre a prévia e o service worker revalida a porta, o formato pedido e o ID da aba antes de converter — o formato precisa coincidir com o da URL e estar disponível. Não depende da memória do worker como armazenamento durável de jobs; o estado de conversão vive na aba da prévia.
 3. **Página de prévia**: mantém o PDF em memória, os controles de impressão e o ciclo de vida dos recursos. DOM construído sem HTML de sites externos.
 4. **Conversor**: `chrome.debugger` / `Emulation.setEmulatedMedia` com mídia `screen` (para aplicar o CSS da tela em vez do CSS de impressão do site, preservando temas escuros) / `Page.printToPDF` com `transferMode: ReturnAsStream`, lendo por `IO.read` e fechando com `IO.close`. Anexa somente durante a operação, restaura a mídia e libera em `finally`, inclusive em erro ou cancelamento.
 5. **PDF.js**: biblioteca, worker, cmaps e fontes empacotados localmente, sem CDN. Renderiza com zoom, navegação, camada de texto e camada de links. Ajustes pendentes nunca são apresentados como já aplicados.

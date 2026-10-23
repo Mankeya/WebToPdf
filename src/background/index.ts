@@ -1,4 +1,5 @@
-import { buildPreviewUrl, parseSourceTabId } from '../shared/preview-url';
+import { parseFormatParam, parseSourceTabId } from '../shared/preview-url';
+import { isFormatAvailable } from '../shared/format';
 import { CONVERSION_PORT, CONVERSION_TIMEOUT_MS, ConversionError } from '../shared/conversion';
 import type { ConversionEvent } from '../shared/conversion';
 import { parsePrintSettings } from '../shared/settings';
@@ -28,18 +29,11 @@ chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
   suggest();
 });
 
-chrome.action.onClicked.addListener((tab) => {
-  const url = buildPreviewUrl(chrome.runtime.getURL('preview.html'), tab.id, tab.url);
-  void chrome.tabs.create({ url }).catch(() => {
-    // Sem registrar URL, título ou conteúdo da página.
-    void chrome.action.setBadgeText({ text: 'ERR' }).catch(() => undefined);
-  });
-});
-
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== CONVERSION_PORT) return;
   const sender = port.sender;
   let sourceTabId: number | null = null;
+  let format: ReturnType<typeof parseFormatParam> | null = null;
   try {
     const url = new URL(sender?.url ?? '');
     if (sender?.id !== chrome.runtime.id || `${url.protocol}//${url.host}${url.pathname}` !== chrome.runtime.getURL('preview.html')) {
@@ -47,15 +41,17 @@ chrome.runtime.onConnect.addListener((port) => {
       return;
     }
     sourceTabId = parseSourceTabId(url.search);
+    format = parseFormatParam(url.search);
   } catch {
     port.disconnect();
     return;
   }
-  if (sourceTabId === null || sender?.tab?.id === sourceTabId) {
+  if (sourceTabId === null || format === null || sender?.tab?.id === sourceTabId) {
     port.disconnect();
     return;
   }
   const tabId = sourceTabId;
+  const requestedFormat = format;
 
   const controller = new AbortController();
   let connected = true;
@@ -71,8 +67,14 @@ chrome.runtime.onConnect.addListener((port) => {
     if (started) return;
     started = true;
     if (typeof request !== 'object' || request === null || !('type' in request) || request.type !== 'convert'
-      || !('sourceTabId' in request) || request.sourceTabId !== tabId || !('settings' in request)) {
+      || !('sourceTabId' in request) || request.sourceTabId !== tabId
+      || !('format' in request) || request.format !== requestedFormat
+      || !('settings' in request)) {
       send({ type: 'error', message: 'Solicitação de conversão inválida.' });
+      return;
+    }
+    if (!isFormatAvailable(requestedFormat)) {
+      send({ type: 'error', message: 'Este formato ainda não está disponível nesta versão.' });
       return;
     }
     const settings = parsePrintSettings(request.settings);

@@ -21,6 +21,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         preview: fileURLToPath(new URL('./preview.html', import.meta.url)),
+        popup: fileURLToPath(new URL('./popup.html', import.meta.url)),
         background: fileURLToPath(new URL('./src/background/index.ts', import.meta.url)),
       },
       output: {

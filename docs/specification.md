@@ -5,7 +5,9 @@ Aprovada explicitamente pelo responsável pelo projeto nesta conversa. Esta vers
 ## Produto
 
 - Chrome/Chromium no Windows, inicialmente com instalação manual em modo desenvolvedor.
-- Um clique no ícone abre uma nova aba com processamento e prévia da aba HTTP/HTTPS original.
+- Clicar no ícone abre um menu de formatos; escolher um formato disponível abre uma nova aba com processamento e prévia da aba HTTP/HTTPS original.
+- O menu é movido por um registro de formatos. Cada formato é habilitado em sua própria versão; nesta versão o menu oferece **PDF**, e os próximos formatos aparecem desabilitados como "Em breve".
+- O formato escolhido viaja na URL da prévia e é validado de novo no service worker antes de converter; páginas internas (`chrome://` etc.) são recusadas antes de abrir a prévia quando a URL da aba é legível.
 - A própria tela contém tamanho do papel, orientação, margens, escala, fundos, cabeçalho/rodapé e nome do arquivo.
 - **Tamanhos de papel**: A4, A3, A5, Carta, Legal, Tabloid, personalizado (largura e altura em milímetros) e **página inteira**.
 - **Página inteira** gera uma única folha contínua cuja altura acompanha o conteúdo da página, medida pelo layout real. Margens, escala e orientação ficam fixas nesse modo. Acima de 200 polegadas, o conteúdo é paginado normalmente, o que preserva a leitura.
@@ -26,7 +28,7 @@ Edição de texto/imagens, anotações, OCR, rolagem automática, conversão em 
 
 ## Aceitação
 
-1. Clique abre prévia real utilizável sem diálogo de impressão.
+1. A escolha do formato no menu abre prévia real utilizável sem diálogo de impressão.
 2. Ajustes atualizam o documento apenas ao solicitar; download corresponde à versão exibida.
 3. Download comum e Salvar como funcionam sem sobrescrita automática.
 4. Preferências persistem após reabrir o navegador.

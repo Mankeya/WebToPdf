@@ -4,6 +4,13 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.3.0] — 2026-10-23
+
+### Adicionado
+
+- **Menu de formatos**: clicar no ícone agora abre um menu com as opções de conversão. O PDF continua disponível na mesma — e o fluxo de prévia, ajustes e download não muda. PNG, Texto e Markdown aparecem no menu como "Em breve" e serão habilitados um por versão, cada um com seus próprios testes e release.
+- O formato escolhido viaja na URL da prévia e é validado no service worker antes de converter; páginas internas (`chrome://` etc.) são recusadas já no menu, sem abrir a prévia.
+
 ## [1.2.0] — 2026-10-22
 
 ### Adicionado

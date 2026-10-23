@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="icons/icon-32.png" />
+    <title>WEBtoPDF — Converter</title>
+  </head>
+  <body>
+    <header class="popup-header">
+      <img class="brand" src="brand/logo-horizontal-escuro-transparente.png" alt="WEBtoPDF" width="150" height="31" />
+      <p class="privacy-badge"><span class="privacy-dot" aria-hidden="true"></span>Processamento local</p>
+    </header>
+
+    <main class="popup-main">
+      <h1 class="popup-title">Converter a página atual</h1>
+      <p class="popup-subtitle">Escolha o formato do arquivo.</p>
+
+      <ul id="format-list" class="format-list" aria-label="Formatos de conversão"></ul>
+
+      <p id="popup-status" class="popup-status" role="status" aria-live="polite"></p>
+    </main>
+
+    <script type="module" src="/src/popup/index.ts"></script>
+  </body>
+</html>

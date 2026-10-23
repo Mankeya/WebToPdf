@@ -1,7 +1,9 @@
 import { DEFAULT_PRINT_SETTINGS, PAPER_SIZES, parsePrintSettings, resolvePaperSizeOriented } from '../shared/settings';
 import type { PaperSize, PrintSettings } from '../shared/settings';
 import { createPdfFilename } from '../shared/filename';
-import { parseSourceTabId } from '../shared/preview-url';
+import { isFormatAvailable } from '../shared/format';
+import type { ConversionFormat } from '../shared/format';
+import { parseFormatParam, parseSourceTabId } from '../shared/preview-url';
 import { requestConversion } from './conversion-client';
 import { resolveDownloadFilename, startDownload } from './downloader';
 import { PdfViewer } from './pdf-viewer';
@@ -40,6 +42,7 @@ const zoom = element<HTMLSelectElement>('#zoom');
 const viewer = new PdfViewer(element('#pdf-container'));
 
 const sourceTabId = parseSourceTabId(location.search);
+const format: ConversionFormat = parseFormatParam(location.search);
 let busy = false;
 let controller: AbortController | null = null;
 let documentBytes: Uint8Array<ArrayBuffer> | null = null;
@@ -168,7 +171,7 @@ async function convert(): Promise<void> {
   status.textContent = 'Convertendo a página e preparando a prévia…';
   controller = new AbortController();
   try {
-    const result = await requestConversion(sourceTabId, settings, controller.signal);
+    const result = await requestConversion(sourceTabId, format, settings, controller.signal);
     await viewer.load(result.bytes);
     documentBytes = result.bytes;
     documentTitle = result.title;
@@ -284,6 +287,9 @@ renderPaperState();
 
 if (new URLSearchParams(location.search).get('error') || sourceTabId === null) {
   status.textContent = 'Página não compatível. Abra a extensão pelo ícone em uma aba HTTP ou HTTPS.';
+  updateControls();
+} else if (!isFormatAvailable(format)) {
+  status.textContent = 'Este formato ainda não está disponível nesta versão.';
   updateControls();
 } else {
   void convert();

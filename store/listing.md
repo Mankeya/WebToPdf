@@ -25,8 +25,9 @@ Converte a página atual em PDF com prévia e ajustes de impressão. Processamen
 ```markdown
 WEBtoPDF transforma a aba que você está vendo em um PDF, com prévia antes de salvar.
 
-Um clique no ícone abre a prévia da página atual, já convertida. Você revisa o
-resultado, ajusta a impressão e só então baixa o arquivo.
+Clicar no ícone abre o menu de formatos. Escolhendo PDF, a prévia da página atual
+abre já convertida. Você revisa o resultado, ajusta a impressão e só então baixa
+o arquivo. Novos formatos de conversão serão adicionados versão a versão.
 
 **O que você pode ajustar**
 

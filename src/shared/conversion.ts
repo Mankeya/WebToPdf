@@ -1,3 +1,4 @@
+import type { ConversionFormat } from './format';
 import type { PrintSettings } from './settings';
 
 export const CONVERSION_PORT = 'webtopdf-convert';
@@ -7,6 +8,8 @@ export const CONVERSION_TIMEOUT_MS = 60_000;
 export interface ConversionRequest {
   type: 'convert';
   sourceTabId: number;
+  /** Formato escolhido no menu; precisa ser o mesmo declarado na URL da prévia. */
+  format: ConversionFormat;
   settings: PrintSettings;
 }
 
