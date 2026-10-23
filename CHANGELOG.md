@@ -4,6 +4,19 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.4.0] — 2026-10-23
+
+### Adicionado
+
+- **PNG no menu de formatos**: escolher **PNG** na prévia salva a página inteira como imagem, com a aparência exata da tela. O único ajuste antes de baixar é o nome do arquivo — os ajustes de impressão continuam valendo só para o PDF.
+- O nome do arquivo agora acompanha o formato escolhido, com `.png` para imagens.
+- Páginas com mais de 16.384 pixels em qualquer dimensão são recusadas na captura PNG com mensagem clara, sugerindo o PDF.
+
+### Técnico
+
+- Sessão do debugger extraída para um módulo compartilhado, reutilizado pela impressão e pela captura de imagem.
+- O visualizador do PDF.js só é carregado quando o formato é PDF; a prévia de imagens abre mais leve.
+
 ## [1.3.0] — 2026-10-23
 
 ### Adicionado

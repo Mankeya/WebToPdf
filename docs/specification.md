@@ -6,9 +6,10 @@ Aprovada explicitamente pelo responsável pelo projeto nesta conversa. Esta vers
 
 - Chrome/Chromium no Windows, inicialmente com instalação manual em modo desenvolvedor.
 - Clicar no ícone abre um menu de formatos; escolher um formato disponível abre uma nova aba com processamento e prévia da aba HTTP/HTTPS original.
-- O menu é movido por um registro de formatos. Cada formato é habilitado em sua própria versão; nesta versão o menu oferece **PDF**, e os próximos formatos aparecem desabilitados como "Em breve".
+- O menu é movido por um registro de formatos. Cada formato é habilitado em sua própria versão; esta versão oferece **PDF** e **PNG**, e os próximos formatos aparecem desabilitados como "Em breve".
 - O formato escolhido viaja na URL da prévia e é validado de novo no service worker antes de converter; páginas internas (`chrome://` etc.) são recusadas antes de abrir a prévia quando a URL da aba é legível.
 - A própria tela contém tamanho do papel, orientação, margens, escala, fundos, cabeçalho/rodapé e nome do arquivo.
+- **PNG**: captura a página inteira com a aparência da tela. Os ajustes de impressão não se aplicam — o único ajuste antes de baixar é o nome do arquivo. Páginas com mais de 16.384 pixels em qualquer dimensão são recusadas com mensagem clara, porque o compositor do Chromium não captura além desse teto.
 - **Tamanhos de papel**: A4, A3, A5, Carta, Legal, Tabloid, personalizado (largura e altura em milímetros) e **página inteira**.
 - **Página inteira** gera uma única folha contínua cuja altura acompanha o conteúdo da página, medida pelo layout real. Margens, escala e orientação ficam fixas nesse modo. Acima de 200 polegadas, o conteúdo é paginado normalmente, o que preserva a leitura.
 - **Personalizado** aceita de 20 mm a 2000 mm em cada dimensão.

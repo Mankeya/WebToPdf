@@ -5,12 +5,12 @@
 <h1 align="center">WEBtoPDF</h1>
 
 <p align="center">
-  Converte a aba que você está vendo em PDF, com prévia antes de salvar.<br>
+  Converte a aba que você está vendo em PDF ou PNG, com prévia antes de salvar.<br>
   Tudo acontece no seu computador — nada é enviado para servidores.
 </p>
 
 <p align="center">
-  <sub>Versão 1.3.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.3.0">download</a></sub>
+  <sub>Versão 1.4.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.4.0">download</a></sub>
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 
 ## O que é
 
-Clicar no ícone do WEBtoPDF abre um **menu de formatos**. Escolher **PDF** abre a prévia da página atual, **já convertida**. Você revisa o resultado, ajusta a impressão e só então salva o arquivo. PNG, Texto e Markdown chegam nas próximas versões — um formato por versão, cada um testado antes de entrar.
+Clicar no ícone do WEBtoPDF abre um **menu de formatos**. Escolher **PDF** ou **PNG** abre a prévia da página atual, **já convertida**. Você revisa o resultado e só então salva o arquivo — no PDF dá para ajustar a impressão antes. Texto e Markdown chegam nas próximas versões — um formato por versão, cada um testado antes de entrar.
 
 O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **texto selecionável** e **links clicáveis**, respeitando o layout de impressão do site.
 
@@ -38,7 +38,9 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 | Recurso | Detalhe |
 |---|---|
-| **Menu de formatos** | Um clique no ícone abre o menu; o PDF já está disponível e os próximos formatos chegam um por versão |
+| **Menu de formatos** | Um clique no ícone abre o menu; PDF e PNG já estão disponíveis e os próximos formatos chegam um por versão |
+| **PDF paginado** | Motor de impressão do Chrome, com texto selecionável e links clicáveis |
+| **PNG da página inteira** | Captura a página toda com a aparência da tela, em uma única imagem |
 | **Prévia imediata** | A aba atual já aparece convertida ao abrir a tela |
 | **Página por página** | Navegação, campo de página e zoom de 50% a 200% |
 | **Texto e links** | Camada de texto selecionável e links clicáveis |
@@ -46,13 +48,18 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 | **Página inteira** | Uma única folha contínua com a altura do conteúdo, sem paginação |
 | **Ajustes de impressão** | Orientação, margens, escala, fundos e cabeçalho/rodapé |
 | **Atualização sob demanda** | As alterações só entram no PDF ao clicar em **Atualizar prévia** |
-| **Nome automático** | `Título da página - AAAA-MM-DD_HH-mm-ss.pdf`, sanitizado para o Windows |
+| **Nome automático** | `Título da página - AAAA-MM-DD_HH-mm-ss.pdf` (ou `.png`), sanitizado para o Windows |
 | **Nunca sobrescreve** | Nomes repetidos recebem sufixo, como `relatório (1).pdf` |
-| **Duas formas de salvar** | **Baixar PDF** na pasta do navegador e **Salvar como…** com o diálogo nativo |
+| **Duas formas de salvar** | **Baixar** na pasta do navegador e **Salvar como…** com o diálogo nativo |
 | **Preferências lembradas** | Suas últimas opções de impressão sobrevivem ao reinício do navegador |
 | **Interface em português** | Toda a extensão, do botão ao mensaje de erro |
 
 <!-- novidades -->
+
+### v1.4.0 — 23/10/2026
+
+- PNG no menu de formatos: salve a página inteira como imagem, com a aparência exata da tela.
+- O nome do arquivo acompanha o formato escolhido, com `.png` para imagens.
 
 ### v1.3.0 — 23/10/2026
 
@@ -63,12 +70,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 - Páginas em modo escuro agora saem no PDF exatamente como aparecem na tela.
 - Cada atualização já vira release no GitHub, com o pacote para baixar e as novidades no README.
 - Mais tamanhos de papel, página inteira contínua e visual renovado na prévia.
-
-### v1.1.0 — 22/10/2026
-
-- **Página inteira**: uma única folha contínua com a altura do conteúdo, sem paginação.
-- **Mais tamanhos de papel**: A3, A5, Legal, Tabloid e medidas personalizadas em milímetros.
-- **Visual renovado**, com a identidade oficial e controles mais claros de orientação, margens e escala.
 
 <!-- /novidades -->
 
@@ -87,10 +88,10 @@ Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O
 
 1. Abra qualquer página HTTP ou HTTPS.
 2. Clique no ícone **WEBtoPDF**.
-3. No menu de formatos, escolha **PDF**. Os próximos formatos aparecem desabilitados, com o selo **Em breve**.
-4. Uma nova aba abre com a prévia do PDF.
-5. Ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor.
-6. Clique em **Baixar PDF** ou **Salvar como…**.
+3. No menu de formatos, escolha **PDF** ou **PNG**. Os próximos formatos aparecem desabilitados, com o selo **Em breve**.
+4. Uma nova aba abre com a prévia.
+5. Em **PDF**, ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor. Em **PNG**, a captura é sempre a página inteira e o único ajuste é o nome do arquivo.
+6. Clique em **Baixar PDF** (ou **Baixar PNG**) ou **Salvar como…**.
 
 A aba original precisa continuar aberta enquanto você ajusta e regenera o documento. Se ela for fechada, a prévia já pronta continua disponível para download.
 

@@ -48,6 +48,12 @@ describe('resolveDownloadFilename', () => {
   it('preserva acentos e espaços', () => {
     expect(resolveDownloadFilename('Relatório anual', 'Título')).toBe('Relatório anual.pdf');
   });
+
+  it('garante a extensão do formato pedido', () => {
+    expect(resolveDownloadFilename('meu-relatorio.png', 'Título', 'png')).toBe('meu-relatorio.png');
+    expect(resolveDownloadFilename('meu-relatorio', 'Título', 'png')).toBe('meu-relatorio.png');
+    expect(resolveDownloadFilename('meu-relatorio.PNG', 'Título', 'png')).toBe('meu-relatorio.png');
+  });
 });
 
 describe('pickAvailableFilename', () => {
@@ -74,5 +80,10 @@ describe('pickAvailableFilename', () => {
       { filename: 'C:\\Users\\teste\\Documentos\\documento.pdf', state: 'complete', endTime: '2026-10-21T09:00:00Z' },
     ];
     expect(await pickAvailableFilename('documento.pdf')).toBe('documento.pdf');
+  });
+
+  it('respeita a extensão do formato ao deduplicar', async () => {
+    downloads = [{ filename: 'C:\\Users\\teste\\Downloads\\foto.png', state: 'complete', endTime: '2026-10-21T10:00:00Z' }];
+    expect(await pickAvailableFilename('foto.png', 'png')).toBe('foto (1).png');
   });
 });

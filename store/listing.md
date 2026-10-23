@@ -15,21 +15,22 @@ Até 45 caracteres. O sufixo explica a função sem repetir a marca.
 Até 132 caracteres:
 
 ```
-Converte a página atual em PDF com prévia e ajustes de impressão. Processamento local, sem envio de dados a servidores.
+Converte a página atual em PDF ou PNG, com prévia. Ajustes de impressão. Processamento local, sem envio de dados a servidores.
 ```
 
-(113 caracteres)
+(126 caracteres)
 
 ## Descrição detalhada
 
 ```markdown
-WEBtoPDF transforma a aba que você está vendo em um PDF, com prévia antes de salvar.
+WEBtoPDF transforma a aba que você está vendo em um PDF ou em uma imagem da
+página inteira, com prévia antes de salvar.
 
-Clicar no ícone abre o menu de formatos. Escolhendo PDF, a prévia da página atual
-abre já convertida. Você revisa o resultado, ajusta a impressão e só então baixa
-o arquivo. Novos formatos de conversão serão adicionados versão a versão.
+Clicar no ícone abre o menu de formatos. Escolhendo PDF ou PNG, a prévia da
+página atual abre já convertida. Você revisa o resultado e só então baixa o
+arquivo. Novos formatos de conversão serão adicionados versão a versão.
 
-**O que você pode ajustar**
+**No PDF, você pode ajustar**
 
 - Tamanho do papel (A4 ou Carta)
 - Orientação (retrato ou paisagem)
@@ -39,12 +40,14 @@ o arquivo. Novos formatos de conversão serão adicionados versão a versão.
 - Cabeçalho e rodapé
 
 As alterações só entram no PDF quando você clica em **Atualizar prévia**, então
-você sempre vê exatamente o que vai ser salvo.
+você sempre vê exatamente o que vai ser salvo. O PNG é sempre a página inteira,
+com a aparência da tela.
 
 **Destaques**
 
-- Prévia paginada com navegação e zoom
+- Prévia paginada do PDF com navegação e zoom
 - Texto selecionável e links clicáveis, como em qualquer PDF
+- PNG da página inteira em uma única imagem
 - Nome de arquivo automático com data e hora, sanitizado para o Windows
 - Nunca sobrescreve um arquivo existente
 - Botão **Salvar como…** para escolher o destino
@@ -53,7 +56,7 @@ você sempre vê exatamente o que vai ser salvo.
 **Privacidade**
 
 Todo o processamento acontece no seu computador. A extensão não envia páginas,
-URLs, títulos ou arquivos PDF para servidores. Não há conta, telemetria,
+URLs, títulos ou arquivos convertidos para servidores. Não há conta, telemetria,
 publicidade nem análise de uso. As únicas informações guardadas são as suas
 preferências de impressão, no perfil local do navegador.
 

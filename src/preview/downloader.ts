@@ -10,12 +10,17 @@ export interface DownloadRequest {
   bytes: Uint8Array<ArrayBuffer>;
   filename: string;
   saveAs: boolean;
+  /** Extensão do formato escolhido no menu, sem ponto (ex.: "png"). */
+  extension: string;
 }
 
-export function resolveDownloadFilename(requested: string, fallbackTitle: string): string {
-  const trimmed = requested.trim().replace(/\.pdf$/i, '');
+/** MIME usado no blob; só influencia a aplicação associada ao abrir o arquivo. */
+const MIME_TYPES: Record<string, string> = { pdf: 'application/pdf', png: 'image/png' };
+
+export function resolveDownloadFilename(requested: string, fallbackTitle: string, extension = 'pdf'): string {
+  const trimmed = requested.trim().replace(new RegExp(`\\.${extension}$`, 'i'), '');
   const base = trimmed.length > 0 ? trimmed : sanitizeTitle(fallbackTitle);
-  return `${sanitizeTitle(base)}.pdf`;
+  return `${sanitizeTitle(base)}.${extension}`;
 }
 
 function escapeRegExp(value: string): string {
@@ -37,18 +42,18 @@ async function inferDownloadDirectory(): Promise<string | null> {
   return path.slice(0, separator);
 }
 
-export async function pickAvailableFilename(desired: string): Promise<string> {
-  const base = desired.replace(/\.pdf$/i, '');
+export async function pickAvailableFilename(desired: string, extension = 'pdf'): Promise<string> {
+  const base = desired.replace(new RegExp(`\\.${extension}$`, 'i'), '');
   const directory = await inferDownloadDirectory();
   for (let index = 0; index < 100; index += 1) {
-    const candidate = index === 0 ? `${base}.pdf` : `${base} (${index}).pdf`;
+    const candidate = index === 0 ? `${base}.${extension}` : `${base} (${index}).${extension}`;
     const pattern = directory
       ? `^${escapeRegExp(directory)}\\\\${escapeRegExp(candidate)}$`
       : `${escapeRegExp(candidate)}$`;
     const existing = await chrome.downloads.search({ filenameRegex: pattern });
     if (existing.length === 0) return candidate;
   }
-  return `${base} (${Date.now()}).pdf`;
+  return `${base} (${Date.now()}).${extension}`;
 }
 
 /**
@@ -98,7 +103,7 @@ async function reserveFilename(url: string, filename: string): Promise<void> {
 }
 
 export async function startDownload(request: DownloadRequest): Promise<DownloadOutcome> {
-  const blob = new Blob([request.bytes], { type: 'application/pdf' });
+  const blob = new Blob([request.bytes], { type: MIME_TYPES[request.extension] ?? 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
 
   if (request.saveAs) {
@@ -138,7 +143,7 @@ export async function startDownload(request: DownloadRequest): Promise<DownloadO
   try {
     // O atributo download respeita o nome, mas sobrescreve arquivos existentes.
     // Por isso escolhemos um nome livre antes de disparar o download.
-    const available = await pickAvailableFilename(request.filename);
+    const available = await pickAvailableFilename(request.filename, request.extension);
     await reserveFilename(url, available);
     triggerAnchorDownload(url, available);
     return await waitForDownload(url, 60_000);

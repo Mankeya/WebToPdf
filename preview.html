@@ -17,7 +17,7 @@
         <div class="sidebar-scroll">
           <h2 id="ajustes-title" class="sidebar-title">Ajustes de impressão</h2>
 
-          <section class="card" aria-labelledby="papel-title">
+          <section class="card print-card" aria-labelledby="papel-title">
             <h3 id="papel-title" class="card-title">Papel</h3>
             <div class="paper-grid" role="radiogroup" aria-label="Papel" id="paper-size"></div>
 
@@ -34,7 +34,7 @@
             <p class="hint" id="paper-hint"></p>
           </section>
 
-          <section class="card" aria-labelledby="orientacao-title">
+          <section class="card print-card" aria-labelledby="orientacao-title">
             <h3 id="orientacao-title" class="card-title">Orientação</h3>
             <div class="segmented" role="radiogroup" aria-label="Orientação">
               <button type="button" role="radio" aria-checked="true" data-orientation="portrait">
@@ -48,7 +48,7 @@
             </div>
           </section>
 
-          <section class="card" aria-labelledby="layout-title">
+          <section class="card print-card" aria-labelledby="layout-title">
             <h3 id="layout-title" class="card-title">Layout</h3>
 
             <label class="field">
@@ -72,7 +72,7 @@
             </p>
           </section>
 
-          <section class="card" aria-labelledby="conteudo-title">
+          <section class="card print-card" aria-labelledby="conteudo-title">
             <h3 id="conteudo-title" class="card-title">Conteúdo</h3>
             <label class="switch">
               <input id="backgrounds" type="checkbox" />
@@ -148,6 +148,9 @@
         </div>
 
         <div id="pdf-container" class="pdf-container" aria-label="Documento PDF"></div>
+        <div id="image-container" class="image-container" aria-label="Imagem da página" hidden>
+          <img id="preview-image" alt="Prévia da imagem da página" />
+        </div>
       </section>
     </main>
 

@@ -1,18 +1,30 @@
-import { ConversionError, MAX_PDF_BYTES, base64ByteLength } from '../shared/conversion';
-import { isSupportedPage } from '../shared/preview-url';
+import { ConversionError, MAX_FILE_BYTES, base64ByteLength, chunkBase64 } from '../shared/conversion';
 import { resolvePaperSize } from '../shared/settings';
 import type { PrintSettings } from '../shared/settings';
+import { openTabSession } from './session';
 
 const MM_PER_INCH = 25.4;
 const CSS_PX_PER_INCH = 96;
 /** Teto de 200 polegadas, o limite de leitura do formato PDF. */
 const MAX_FULL_PAGE_PX = 200 * CSS_PX_PER_INCH;
+/**
+ * Maior lado aceito numa captura de imagem. O compositor do Chromium falha
+ * acima de ~16.384 px por dimensão (limite de textura portátil), então o
+ * recuso vem antes do comando, com mensagem clara, em vez de um erro vago
+ * do debugger.
+ */
+const MAX_CAPTURE_PX = 16_384;
 
 interface PaperRequest {
   widthInches: number;
   heightInches: number;
   marginInches: number;
   scale: number;
+}
+
+interface ContentSize {
+  width: number;
+  height: number;
 }
 
 /**
@@ -24,6 +36,17 @@ interface PaperRequest {
  * conteúdo é paginado normalmente, o que preserva a leitura.
  */
 async function resolveFullPageSize(target: { tabId: number }): Promise<PaperRequest> {
+  const { width, height } = await readContentSize(target);
+  return {
+    widthInches: width / CSS_PX_PER_INCH,
+    heightInches: Math.min(height, MAX_FULL_PAGE_PX) / CSS_PX_PER_INCH,
+    marginInches: 0,
+    scale: 1,
+  };
+}
+
+/** Mede o tamanho do conteúdo via layout real, em pixels CSS. */
+async function readContentSize(target: { tabId: number }): Promise<ContentSize> {
   const metrics: unknown = await chrome.debugger.sendCommand(target, 'Page.getLayoutMetrics');
   if (typeof metrics !== 'object' || metrics === null || !('cssContentSize' in metrics)) {
     throw new ConversionError('Não foi possível medir o tamanho do conteúdo da página.');
@@ -34,14 +57,7 @@ async function resolveFullPageSize(target: { tabId: number }): Promise<PaperRequ
     || !Number.isFinite(size.width) || !Number.isFinite(size.height)) {
     throw new ConversionError('Não foi possível medir o tamanho do conteúdo da página.');
   }
-  const widthPx = Math.max(size.width, 1);
-  const heightPx = Math.max(size.height, 1);
-  return {
-    widthInches: widthPx / CSS_PX_PER_INCH,
-    heightInches: Math.min(heightPx, MAX_FULL_PAGE_PX) / CSS_PX_PER_INCH,
-    marginInches: 0,
-    scale: 1,
-  };
+  return { width: Math.max(size.width, 1), height: Math.max(size.height, 1) };
 }
 
 export async function convertTabToPdf(
@@ -50,33 +66,10 @@ export async function convertTabToPdf(
   onChunk: (base64: string, byteLength: number) => void,
   signal: AbortSignal,
 ): Promise<{ title: string; byteLength: number }> {
-  let tab: chrome.tabs.Tab;
-  try {
-    tab = await chrome.tabs.get(tabId);
-  } catch {
-    throw new ConversionError('A página original foi fechada ou não está disponível. Abra a extensão novamente na página desejada.');
-  }
-  if (tab.url && !isSupportedPage(tab.url)) throw new ConversionError('Página não compatível. Use uma aba HTTP ou HTTPS.');
-  if (tab.status === 'loading') throw new ConversionError('Aguarde a página original terminar de carregar e tente atualizar a prévia.');
-
-  const target = { tabId };
-  let attached = false;
+  const { target, title, detach } = await openTabSession(tabId, signal, 'impressão');
   let emulated = false;
   let stream: string | undefined;
-  const cancel = (): void => {
-    if (attached) void chrome.debugger.detach(target).catch(() => undefined);
-  };
-  signal.addEventListener('abort', cancel);
-
   try {
-    signal.throwIfAborted();
-    try {
-      await chrome.debugger.attach(target, '1.3');
-      attached = true;
-    } catch {
-      throw new ConversionError('O Chrome não permitiu iniciar a impressão. Feche o DevTools da página e verifique as permissões ou políticas do navegador.');
-    }
-    signal.throwIfAborted();
     // A impressão usa a mídia "print" por padrão, o que aplica as folhas de
     // estilo de impressão do próprio site — frequentemente um fundo branco que
     // apaga temas escuros. Emular "screen" mantém a aparência que o usuário
@@ -84,18 +77,6 @@ export async function convertTabToPdf(
     await chrome.debugger.sendCommand(target, 'Emulation.setEmulatedMedia', { media: 'screen' });
     emulated = true;
     signal.throwIfAborted();
-    // activeTab não cobre regenerações após navegar para outra origem. Consultar
-    // somente a entrada atual via a sessão já autorizada evita pedir "tabs".
-    const history: unknown = await chrome.debugger.sendCommand(target, 'Page.getNavigationHistory');
-    if (typeof history !== 'object' || history === null || !('entries' in history) || !Array.isArray(history.entries)
-      || !('currentIndex' in history) || typeof history.currentIndex !== 'number') {
-      throw new ConversionError('Não foi possível identificar a página original.');
-    }
-    const current: unknown = history.entries[history.currentIndex];
-    if (typeof current !== 'object' || current === null || !('url' in current) || typeof current.url !== 'string' || !isSupportedPage(current.url)) {
-      throw new ConversionError('Página não compatível. Use uma aba HTTP ou HTTPS.');
-    }
-    const title = 'title' in current && typeof current.title === 'string' ? current.title : 'pagina';
 
     let paper: PaperRequest;
     let landscape: boolean;
@@ -145,7 +126,7 @@ export async function convertTabToPdf(
       const base64 = 'base64Encoded' in chunk && chunk.base64Encoded === true ? chunk.data : btoa(chunk.data);
       const chunkBytes = base64ByteLength(base64);
       byteLength += chunkBytes;
-      if (byteLength > MAX_PDF_BYTES) throw new ConversionError('O PDF excedeu o limite inicial de 32 MB. Tente uma página menor.');
+      if (byteLength > MAX_FILE_BYTES) throw new ConversionError('O PDF excedeu o limite inicial de 32 MB. Tente uma página menor.');
       signal.throwIfAborted();
       if (base64) onChunk(base64, chunkBytes);
       eof = 'eof' in chunk && chunk.eof === true;
@@ -153,9 +134,53 @@ export async function convertTabToPdf(
     if (byteLength === 0) throw new ConversionError('O PDF gerado está vazio.');
     return { title: title || 'pagina', byteLength };
   } finally {
-    signal.removeEventListener('abort', cancel);
     if (stream) await chrome.debugger.sendCommand(target, 'IO.close', { handle: stream }).catch(() => undefined);
     if (emulated) await chrome.debugger.sendCommand(target, 'Emulation.setEmulatedMedia', { media: '' }).catch(() => undefined);
-    if (attached) await chrome.debugger.detach(target).catch(() => undefined);
+    await detach();
+  }
+}
+
+/**
+ * Captura a página inteira como PNG, com a aparência da tela.
+ *
+ * A screenshot do Chromium já registra a página como está na tela (midia
+ * "screen"), então não há injeção de DOM nem troca de mídia aqui — o clip
+ * apenas estende a captura além da janela para cobrir o conteúdo todo.
+ */
+export async function convertTabToPng(
+  tabId: number,
+  onChunk: (base64: string, byteLength: number) => void,
+  signal: AbortSignal,
+): Promise<{ title: string; byteLength: number }> {
+  const { target, title, detach } = await openTabSession(tabId, signal, 'captura');
+  try {
+    const size = await readContentSize(target);
+    if (size.width > MAX_CAPTURE_PX || size.height > MAX_CAPTURE_PX) {
+      throw new ConversionError('Esta página é grande demais para virar uma imagem (limite de 16.384 pixels por lado). Converta em PDF.');
+    }
+    signal.throwIfAborted();
+    const response: unknown = await chrome.debugger.sendCommand(target, 'Page.captureScreenshot', {
+      format: 'png',
+      // `captureBeyondViewport` no nível do comando vale do Chrome 105 em
+      // diante; o campo homônimo dentro de `clip` só existe em versões mais
+      // novas e quebraria o mínimo suportado (116).
+      captureBeyondViewport: true,
+      clip: { x: 0, y: 0, width: size.width, height: size.height, scale: 1 },
+    });
+    if (typeof response !== 'object' || response === null || !('data' in response) || typeof response.data !== 'string') {
+      throw new ConversionError('O Chrome não retornou uma imagem válida.');
+    }
+    const byteLength = base64ByteLength(response.data);
+    if (byteLength === 0) throw new ConversionError('A imagem capturada está vazia.');
+    if (byteLength > MAX_FILE_BYTES) throw new ConversionError('A imagem excedeu o limite inicial de 32 MB. Converta em PDF.');
+    // A porta recebe Base64 em fatias de 256 KB (múltiplo de 4 caracteres),
+    // para cada fatia decodificar sozinha no lado da prévia.
+    for (const chunk of chunkBase64(response.data)) {
+      signal.throwIfAborted();
+      onChunk(chunk, base64ByteLength(chunk));
+    }
+    return { title: title || 'pagina', byteLength };
+  } finally {
+    await detach();
   }
 }

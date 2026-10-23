@@ -21,12 +21,17 @@ describe('registro de formatos', () => {
     }
   });
 
-  it('publica somente o PDF como disponível nesta versão', () => {
-    expect(FORMAT_IDS.filter(isFormatAvailable)).toEqual(['pdf']);
+  it('publica PDF e PNG como disponíveis nesta versão', () => {
+    expect(FORMAT_IDS.filter(isFormatAvailable)).toEqual(['pdf', 'png']);
+  });
+
+  it('mantém TXT e Markdown indisponíveis até suas releases', () => {
+    expect(isFormatAvailable('txt')).toBe(false);
+    expect(isFormatAvailable('md')).toBe(false);
   });
 
   it('findFormat devolve a definição conhecida e undefined para ID forjado', () => {
     expect(findFormat('pdf')?.extension).toBe('pdf');
-    expect(findFormat('png')?.available).toBe(false);
+    expect(findFormat('png')?.available).toBe(true);
   });
 });

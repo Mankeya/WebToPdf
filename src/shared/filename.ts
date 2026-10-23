@@ -36,11 +36,12 @@ export function sanitizeTitle(title: string): string {
   return safeTitle;
 }
 
-export function createPdfFilename(title: string, date: Date = new Date()): string {
+/** Nome padrão do arquivo para qualquer formato de conversão. */
+export function createConversionFilename(title: string, extension: string, date: Date = new Date()): string {
   if (Number.isNaN(date.getTime())) throw new RangeError('Data inválida.');
 
   const pad = (value: number): string => String(value).padStart(2, '0');
   const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   const time = `${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
-  return `${sanitizeTitle(title)} - ${day}_${time}.pdf`;
+  return `${sanitizeTitle(title)} - ${day}_${time}.${extension}`;
 }
