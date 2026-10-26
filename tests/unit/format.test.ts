@@ -22,7 +22,7 @@ describe('registro de formatos', () => {
   });
 
   it('publica PDF, PNG e TXT como disponíveis nesta versão', () => {
-    expect(FORMAT_IDS.filter(isFormatAvailable)).toEqual(['pdf', 'png', 'txt']);
+    expect(FORMAT_IDS.filter(isFormatAvailable)).toEqual(['pdf', 'screen-pdf', 'png', 'txt']);
   });
 
   it('mantém Markdown indisponível até a sua release', () => {

@@ -1,7 +1,7 @@
 /** Somente RAM: no máximo quatro capturas, por até 30 s, sem histórico. */
 export class SnapshotCache {
   private readonly entries = new Map<string, { tabId: number; url: string; data: string; expires: number }>();
-  constructor(private readonly now = Date.now) {}
+  constructor(private readonly now = () => Date.now()) {}
 
   prune(): void {
     for (const [id, entry] of this.entries) {

@@ -26,12 +26,12 @@ test('escolher PDF abre a prévia da aba ativa e conclui a conversão', async ({
 
   const popup = await context.newPage();
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
-  await expect(popup.getByRole('button', { name: /PDF/ })).toBeEnabled();
+  await expect(popup.locator('[data-format="pdf"]')).toBeEnabled();
 
   // A aba de origem precisa ser a ativa, como no clique real no ícone.
   await source.bringToFront();
   const previewPromise = context.waitForEvent('page', { predicate: (page) => page.url().includes('preview.html') });
-  await popup.getByRole('button', { name: /PDF/ }).click();
+  await popup.locator('[data-format="pdf"]').click();
   const preview = await previewPromise;
 
   expect(preview.url()).toContain(`sourceTabId=${tabId}`);
@@ -44,7 +44,7 @@ test('recusa páginas internas no menu sem abrir a prévia', async ({ context, e
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
 
   // O próprio popup é a aba ativa: uma página interna, que não pode ser convertida.
-  await popup.getByRole('button', { name: /PDF/ }).click();
+  await popup.locator('[data-format="pdf"]').click();
 
   await expect(popup.getByRole('status')).toHaveText('Esta página não pode ser convertida. Abra uma aba HTTP ou HTTPS.');
   expect(context.pages().filter((page) => page.url().includes('preview.html'))).toHaveLength(0);

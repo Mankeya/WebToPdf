@@ -4,6 +4,23 @@ import { CONVERSION_PORT, CONVERSION_TIMEOUT_MS, ConversionError } from '../shar
 import type { ConversionEvent } from '../shared/conversion';
 import { parsePrintSettings } from '../shared/settings';
 import { convertTabToPdf, convertTabToPng, convertTabToTxt } from './converter';
+import { buildPreviewUrl } from '../shared/preview-url';
+import { captureSnapshot, convertSnapshot, removeSnapshots, storeSnapshot } from './snapshots';
+
+chrome.tabs.onRemoved.addListener(removeSnapshots);
+chrome.tabs.onUpdated.addListener((tabId, change) => {
+  if (change.status === 'loading' || change.url) removeSnapshots(tabId);
+});
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command !== 'capture-screen-pdf') return;
+  void captureSnapshot().then(async (snapshot) => {
+    if (!snapshot) return;
+    const url = new URL(buildPreviewUrl(chrome.runtime.getURL('preview.html'), snapshot.tabId, 'screen-pdf'));
+    url.searchParams.set('snapshot', snapshot.token);
+    await chrome.tabs.create({ url: url.href });
+  }).catch(() => undefined);
+});
 
 const activeTabs = new Set<number>();
 
@@ -52,6 +69,7 @@ chrome.runtime.onConnect.addListener((port) => {
   }
   const tabId = sourceTabId;
   const requestedFormat = format;
+  const snapshotToken = new URL(sender!.url!).searchParams.get('snapshot');
 
   const controller = new AbortController();
   let connected = true;
@@ -90,7 +108,9 @@ chrome.runtime.onConnect.addListener((port) => {
     const timeout = setTimeout(() => controller.abort(new ConversionError('A conversão excedeu 60 segundos. Tente novamente com uma página menor.')), CONVERSION_TIMEOUT_MS);
     // Só o PDF usa as configurações de impressão; os demais formatos as
     // recebem no mesmo formato de contrato, mas as ignoram.
-    const convert = requestedFormat === 'pdf'
+    const convert = requestedFormat === 'screen-pdf'
+      ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertSnapshot(tabId, snapshotToken, onChunk, signal)
+      : requestedFormat === 'pdf'
       ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToPdf(tabId, settings, onChunk, signal)
       : requestedFormat === 'txt'
         ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToTxt(tabId, onChunk, signal)
@@ -115,6 +135,11 @@ chrome.runtime.onConnect.addListener((port) => {
 
 chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
   if (typeof message !== 'object' || message === null || !('type' in message)) return false;
+  if (message.type === 'store-snapshot') {
+    if (sender?.id !== chrome.runtime.id || sender.url !== chrome.runtime.getURL('popup.html')) return false;
+    void storeSnapshot(message).then((token) => sendResponse({ token })).catch(() => sendResponse({ token: null }));
+    return true;
+  }
   if (message.type !== 'reserve-filename') return false;
   if (sender?.id !== chrome.runtime.id) return false;
   // Somente a tela de prévia, que é a origem legítima dos downloads.

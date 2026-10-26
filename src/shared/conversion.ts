@@ -32,7 +32,7 @@ const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
  * verdadeiros e o tamanho é o único limite externo deles.
  */
 export function matchesFileSignature(format: ConversionFormat, bytes: Uint8Array): boolean {
-  if (format === 'pdf') {
+  if (format === 'pdf' || format === 'screen-pdf') {
     return PDF_SIGNATURE.split('').every((char, index) => bytes[index] === char.charCodeAt(0));
   }
   if (format === 'png') {
