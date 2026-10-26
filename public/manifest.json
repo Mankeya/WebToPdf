@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "WEBtoPDF",
   "description": "Converte a página atual em PDF ou PNG, com prévia. Ajustes de impressão. Processamento local, sem envio de dados a servidores.",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "minimum_chrome_version": "116",
   "icons": {
     "16": "icons/icon-16.png",

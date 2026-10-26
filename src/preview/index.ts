@@ -1,6 +1,8 @@
 import { DEFAULT_PRINT_SETTINGS, PAPER_SIZES, parsePrintSettings, resolvePaperSizeOriented } from '../shared/settings';
 import type { PaperSize, PrintSettings } from '../shared/settings';
 import { DIRECT_CONVERSION_KEY, parseDirectConversion } from '../shared/direct';
+import { THEME_KEY, parseTheme } from '../shared/theme';
+import type { Theme } from '../shared/theme';
 import { createConversionFilename } from '../shared/filename';
 import { findFormat, isFormatAvailable } from '../shared/format';
 import type { ConversionFormat } from '../shared/format';
@@ -32,6 +34,7 @@ const backgrounds = element<HTMLInputElement>('#backgrounds');
 const headerFooter = element<HTMLInputElement>('#header-footer');
 const filename = element<HTMLInputElement>('#filename');
 const directToggle = element<HTMLInputElement>('#direct-conversion');
+const themeToggle = element<HTMLButtonElement>('#theme-toggle');
 const updateButton = element<HTMLButtonElement>('#update-preview');
 const downloadButton = element<HTMLButtonElement>('#download-pdf');
 const saveAsButton = element<HTMLButtonElement>('#save-as-pdf');
@@ -91,8 +94,10 @@ function buildPaperOptions(): void {
 
     const shape = document.createElement('span');
     shape.className = 'paper-shape';
+    // Altura igual para todos: as duas linhas da grade têm de ficar com a
+    // mesma medida, senão as caixinhas ficam desalinhadas.
     const ratio = entry.id === 'FullPage' ? 0.28 : entry.widthMm / entry.heightMm;
-    const height = entry.id === 'FullPage' ? 40 : PAPER_SHAPE_HEIGHT;
+    const height = PAPER_SHAPE_HEIGHT;
     const width = Math.max(10, Math.round(height * ratio));
     shape.style.width = `${width}px`;
     shape.style.height = `${height}px`;
@@ -316,6 +321,38 @@ async function persistDirectConversion(): Promise<void> {
   }
 }
 
+function applyTheme(theme: Theme): void {
+  if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
+  else delete document.documentElement.dataset.theme;
+  themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
+  themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro');
+}
+
+/**
+ * Tema claro/escuro da interface. Falha de leitura vira claro: o design atual
+ * continua sendo o padrão e a tela nunca fica em um estado indefinido.
+ */
+async function loadTheme(): Promise<void> {
+  let theme: Theme = 'light';
+  try {
+    const stored = await chrome.storage.local.get(THEME_KEY);
+    theme = parseTheme(stored[THEME_KEY]);
+  } catch {
+    theme = 'light';
+  }
+  applyTheme(theme);
+}
+
+async function toggleTheme(): Promise<void> {
+  const next: Theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try {
+    await chrome.storage.local.set({ [THEME_KEY]: next });
+  } catch {
+    // Sem persistência o tema vale só nesta sessão da prévia.
+  }
+}
+
 async function persistSettings(): Promise<void> {
   try {
     await chrome.storage.local.set({ printSettings: savedSettings });
@@ -340,6 +377,8 @@ if (!isPdf) {
 
 filename.addEventListener('input', () => { filenameEdited = true; });
 directToggle.addEventListener('change', () => { void persistDirectConversion(); });
+// Listener síncrono na carga do módulo: o clique nunca pode chegar antes dele.
+themeToggle.addEventListener('click', () => { void toggleTheme(); });
 updateButton.addEventListener('click', () => { void convert(); });
 for (const button of orientationButtons) {
   button.addEventListener('click', () => {
@@ -381,6 +420,7 @@ window.addEventListener('pagehide', () => {
   void viewer?.destroy().catch(() => undefined);
 }, { once: true });
 
+await loadTheme();
 await loadSavedSettings();
 await loadDirectConversion();
 renderPaperState();

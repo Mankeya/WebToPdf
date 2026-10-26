@@ -9,11 +9,17 @@
   <body>
     <header class="app-header">
       <img class="brand" src="brand/logo-horizontal-escuro-transparente.png" alt="WEBtoPDF" width="186" height="38" />
-      <p class="privacy-badge"><span class="privacy-dot" aria-hidden="true"></span>Processamento local</p>
+      <div class="header-actions">
+        <p class="privacy-badge"><span class="privacy-dot" aria-hidden="true"></span>Processamento local</p>
+        <button id="theme-toggle" type="button" class="icon-button theme-toggle" aria-label="Ativar modo escuro" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="theme-icon theme-icon-sun"><circle cx="12" cy="12" r="4.5" /><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.2 5.2l1.8 1.8M17 17l1.8 1.8M18.8 5.2 17 7M7 17l-1.8 1.8" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="theme-icon theme-icon-moon"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z" /></svg>
+        </button>
+      </div>
     </header>
 
     <main class="layout">
-      <aside class="sidebar" aria-labelledby="ajustes-title">
+      <aside class="preview-sidebar" aria-labelledby="ajustes-title">
         <div class="sidebar-scroll">
           <h2 id="ajustes-title" class="sidebar-title">Ajustes de impressão</h2>
 
