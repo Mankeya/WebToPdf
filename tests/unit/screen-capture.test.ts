@@ -39,7 +39,7 @@ describe('PDF de imagem', () => {
     expect(pdf).not.toContain('/Font');
     const offset = Number(/startxref\n(\d+)/.exec(pdf)?.[1]);
     expect(pdf.slice(offset, offset + 4)).toBe('xref');
-    const entries = pdf.slice(offset).split('\n').slice(4, 9);
+    const entries = pdf.slice(offset).split('\n').slice(3, 8);
     entries.forEach((entry, index) => {
       expect(pdf.slice(Number(entry.slice(0, 10)))).toMatch(new RegExp(`^${index + 1} 0 obj`));
     });
