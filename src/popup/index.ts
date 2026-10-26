@@ -1,5 +1,6 @@
 import { CONVERSION_FORMATS, findFormat } from '../shared/format';
 import type { ConversionFormat } from '../shared/format';
+import { DIRECT_CONVERSION_KEY, parseDirectConversion } from '../shared/direct';
 import { buildPreviewUrl, isSupportedPage } from '../shared/preview-url';
 import './styles.css';
 
@@ -100,4 +101,74 @@ async function openPreview(format: ConversionFormat): Promise<void> {
   }
 }
 
-renderFormats();
+/**
+ * Modo conversão direta: um clique no ícone leva à prévia do PDF já
+ * convertendo, sem desenhar o menu. As validações são as mesmas do menu — a
+ * única diferença é que página incompatível vira a prévia com o aviso, já que
+ * não há tela de menu para exibir o erro.
+ */
+async function openDirectPreview(): Promise<void> {
+  status.textContent = 'Abrindo a prévia do PDF…';
+  let tabId: number | undefined;
+  let tabUrl: string | undefined;
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    tabId = tab?.id;
+    tabUrl = tab?.url;
+  } catch {
+    status.textContent = 'Não foi possível identificar a aba atual. Tente novamente.';
+    return;
+  }
+  if (tabId === undefined) {
+    status.textContent = 'Não foi possível identificar a aba atual. Tente novamente.';
+    return;
+  }
+  const supported = tabUrl === undefined || isSupportedPage(tabUrl);
+  try {
+    // Sem URL legível o `tabId` viaja mesmo assim: a prévia e o service
+    // worker revalidam antes de converter, como no fluxo do menu.
+    const previewTabId = supported ? tabId : undefined;
+    await chrome.tabs.create({ url: buildPreviewUrl(chrome.runtime.getURL('preview.html'), previewTabId, 'pdf') });
+    window.close();
+  } catch {
+    status.textContent = 'Não foi possível abrir a prévia. Tente novamente.';
+  }
+}
+
+/**
+ * Lê a preferência de conversão direta. Falha de leitura conta como
+ * desligado: o usuário sempre volta ao menu, nunca fica sem saída.
+ */
+async function readDirectConversion(): Promise<boolean> {
+  try {
+    const stored = await chrome.storage.local.get(DIRECT_CONVERSION_KEY);
+    return parseDirectConversion(stored[DIRECT_CONVERSION_KEY]);
+  } catch {
+    return false;
+  }
+}
+
+async function persistDirectConversion(enabled: boolean): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [DIRECT_CONVERSION_KEY]: enabled });
+  } catch {
+    // Sem persistência a escolha vale só nesta abertura do menu.
+  }
+}
+
+async function boot(): Promise<void> {
+  if (await readDirectConversion()) {
+    await openDirectPreview();
+    return;
+  }
+  renderFormats();
+  const toggle = element<HTMLInputElement>('#direct-conversion');
+  toggle.checked = false;
+  toggle.addEventListener('change', () => {
+    void persistDirectConversion(toggle.checked);
+    if (toggle.checked) status.textContent = 'Pronto: o próximo clique no ícone abre o PDF direto. Para voltar ao menu, desligue na prévia.';
+    else status.textContent = '';
+  });
+}
+
+void boot();

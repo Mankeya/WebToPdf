@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.5.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.5.0">download</a></sub>
+  <sub>Versão 1.6.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.6.0">download</a></sub>
 </p>
 
 <p align="center">
@@ -39,6 +39,7 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 | Recurso | Detalhe |
 |---|---|
 | **Menu de formatos** | Um clique no ícone abre o menu; PDF, PNG e Texto já estão disponíveis e os próximos formatos chegam um por versão |
+| **Conversão direta (opcional)** | Ligue no menu e o ícone passa a abrir o PDF direto, sem escolher formato; desligue na prévia |
 | **PDF paginado** | Motor de impressão do Chrome, com texto selecionável e links clicáveis |
 | **PNG da página inteira** | Captura a página toda com a aparência da tela, em uma única imagem |
 | **Texto em `.txt`** | Só o texto visível da página, em UTF-8 com BOM, pronto para o Bloco do Windows |
@@ -57,6 +58,10 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 <!-- novidades -->
 
+### v1.6.0 — 26/10/2026
+
+- Conversão direta em 1 clique (opcional): ligue no menu e o ícone abre o PDF já convertido, sem escolher formato.
+
 ### v1.5.0 — 23/10/2026
 
 - Salvar a página atual como arquivo de texto (.txt) pelo menu de formatos.
@@ -65,10 +70,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 - PNG no menu de formatos: salve a página inteira como imagem, com a aparência exata da tela.
 - O nome do arquivo acompanha o formato escolhido, com `.png` para imagens.
-
-### v1.3.0 — 23/10/2026
-
-- Menu de formatos ao clicar no ícone: escolha o formato da conversão — o PDF já está disponível e os próximos formatos chegam versão a versão.
 
 <!-- /novidades -->
 
@@ -92,6 +93,10 @@ Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O
 5. Em **PDF**, ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor. Em **PNG**, a captura é sempre a página inteira e o único ajuste é o nome do arquivo. Em **Texto**, a prévia mostra o texto da página como ele está na tela e o único ajuste também é o nome do arquivo.
 6. Clique em **Baixar PDF** (ou **Baixar PNG**, **Baixar Texto**) ou **Salvar como…**.
 
+### Conversão direta em 1 clique (opcional)
+
+No fim do menu, ative **Conversão direta em 1 clique**: da próxima vez, o ícone abre a prévia do PDF já convertida, sem mostrar o menu. O modo fica salvo; para voltar ao menu, desligue a opção **Conversão direta** na barra lateral da prévia. Páginas que não podem ser convertidas (`chrome://` etc.) abrem a prévia com o aviso.
+
 A aba original precisa continuar aberta enquanto você ajusta e regenera o documento. Se ela for fechada, a prévia já pronta continua disponível para download.
 
 ## Privacidade
@@ -101,7 +106,7 @@ O WEBtoPDF **não envia nada para fora do seu computador**.
 - Sem servidores, sem conta, sem telemetria, sem publicidade, sem análise de uso.
 - A extensão **não injeta scripts, HTML ou CSS** nas páginas e não altera o que você está vendo. De conteúdo do site, ela lê apenas o necessário para o formato escolhido: no PDF e no PNG o trabalho é todo do motor de impressão e do compositor do Chrome; no **Texto**, uma única leitura do texto visível na tela (`innerText`) da aba que você escolheu converter — que fica só na sua máquina.
 - Sem acesso a cookies, histórico de navegação ou lista de permissões de sites.
-- Os únicos dados guardados são as suas **preferências de impressão**, no perfil local do navegador.
+- Os únicos dados guardados são as suas **preferências de impressão** e a opção de conversão direta, no perfil local do navegador.
 - O documento convertido (PDF, imagem ou texto) fica **apenas na memória** da aba da prévia e é descartado ao fechar ou recarregar a aba.
 
 A extensão pede quatro permissões, todas com uso restrito e verificável:

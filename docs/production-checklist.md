@@ -15,7 +15,7 @@ npm run package
 3. **Carregar sem compactação** → selecione a pasta `dist` (não o `.zip`).
 4. Fixe o ícone na barra.
 
-> Para validar exatamente o que será publicado, descompacte `webtopdf-1.5.0.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
+> Para validar exatamente o que será publicado, descompacte `webtopdf-1.6.0.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
 
 ## Resultado esperado por etapa
 
@@ -46,6 +46,9 @@ npm run package
 | 23 | Escolha **Texto** no menu | Prévia mostra o texto da página em bloco monoespaçado; os cards de ajustes de impressão não aparecem, só o nome do arquivo |
 | 24 | Clique em **Baixar Texto** | Arquivo `.txt` salvo com o nome exibido; abrir no Bloco do Windows mostra a acentuação correta (UTF-8 com BOM) |
 | 25 | Converta uma página só de imagens em **Texto** | Recusa com "Nenhum texto visível para extrair nesta página"; nenhum download é criado |
+| 26 | No fim do menu, ative **Conversão direta em 1 clique** | Interruptor liga, status avisa que o próximo clique abre o PDF direto |
+| 27 | Clique no ícone de novo na mesma aba | Menu não aparece; abre a prévia já com **"PDF pronto"** |
+| 28 | Na prévia, desligue **Conversão direta** (cartão na barra lateral) e clique no ícone | O menu de formatos volta a abrir; a opção continua desligada ao reabrir o navegador |
 
 ## Verificações de privacidade
 
