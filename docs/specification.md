@@ -7,6 +7,7 @@ Aprovada explicitamente pelo responsável pelo projeto nesta conversa. Esta vers
 - Chrome/Chromium no Windows, inicialmente com instalação manual em modo desenvolvedor.
 - Clicar no ícone abre um menu de formatos; escolher um formato disponível abre uma nova aba com processamento e prévia da aba HTTP/HTTPS original.
 - O menu é movido por um registro de formatos. Cada formato é habilitado em sua própria versão; esta versão oferece **PDF**, **PNG** e **Texto**, e o próximo formato aparece desabilitado como "Em breve".
+- **Conversão direta (opcional, padrão desligado)**: um interruptor no menu liga uma preferência local que faz o clique no ícone abrir a prévia do PDF já convertida, sem exibir o menu. Páginas incompatíveis abrem a prévia com o aviso, já que não há menu para exibir o erro. A mesma opção na barra lateral da prévia desliga o modo — o menu nunca fica inalcançável. O comportamento padrão do produto não muda.
 - O formato escolhido viaja na URL da prévia e é validado de novo no service worker antes de converter; páginas internas (`chrome://` etc.) são recusadas antes de abrir a prévia quando a URL da aba é legível.
 - A própria tela contém tamanho do papel, orientação, margens, escala, fundos, cabeçalho/rodapé e nome do arquivo.
 - **PNG**: captura a página inteira com a aparência da tela. Os ajustes de impressão não se aplicam — o único ajuste antes de baixar é o nome do arquivo. Páginas com mais de 16.384 pixels em qualquer dimensão são recusadas com mensagem clara, porque o compositor do Chromium não captura além desse teto.

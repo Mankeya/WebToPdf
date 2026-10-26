@@ -4,6 +4,19 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.6.0] — 2026-10-26
+
+### Adicionado
+
+- **Conversão direta em 1 clique (opcional)**: um interruptor no menu de formatos faz o próximo clique no ícone abrir a prévia do PDF já convertida, sem passar pela escolha de formato. O padrão continua sendo o menu — quem nunca ligou a opção não vê nenhuma diferença.
+- Com o modo direto ligado, uma página incompatível (`chrome://` etc.) abre a prévia com o aviso de que a página não pode ser convertida, já que não há menu na frente para exibir o erro.
+- A barra lateral da prévia ganhou o cartão **Conversão direta**, que liga e desliga o modo de qualquer formato — é por ali que se volta ao menu.
+
+### Técnico
+
+- A preferência mora em `chrome.storage.local` (`directConversion`, `true` estrito, padrão desligado) e é compartilhada entre menu e prévia pelo módulo `src/shared/direct.ts`.
+- O modo direto reutiliza as mesmas validações de aba e URL do menu (`isSupportedPage` + `buildPreviewUrl`); nenhuma permissão nova e nenhuma mudança de CSP.
+
 ## [1.5.0] — 2026-10-23
 
 ### Adicionado

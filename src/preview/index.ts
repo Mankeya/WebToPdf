@@ -1,5 +1,6 @@
 import { DEFAULT_PRINT_SETTINGS, PAPER_SIZES, parsePrintSettings, resolvePaperSizeOriented } from '../shared/settings';
 import type { PaperSize, PrintSettings } from '../shared/settings';
+import { DIRECT_CONVERSION_KEY, parseDirectConversion } from '../shared/direct';
 import { createConversionFilename } from '../shared/filename';
 import { findFormat, isFormatAvailable } from '../shared/format';
 import type { ConversionFormat } from '../shared/format';
@@ -30,6 +31,7 @@ const fullPageHint = element<HTMLElement>('#full-page-hint');
 const backgrounds = element<HTMLInputElement>('#backgrounds');
 const headerFooter = element<HTMLInputElement>('#header-footer');
 const filename = element<HTMLInputElement>('#filename');
+const directToggle = element<HTMLInputElement>('#direct-conversion');
 const updateButton = element<HTMLButtonElement>('#update-preview');
 const downloadButton = element<HTMLButtonElement>('#download-pdf');
 const saveAsButton = element<HTMLButtonElement>('#save-as-pdf');
@@ -292,6 +294,28 @@ async function loadSavedSettings(): Promise<void> {
   scale.value = String(savedSettings.scale * 100);
 }
 
+/**
+ * A conversão direta é a única preferência que também pode ser desligada da
+ * prévia: com o modo ativo o menu não abre mais, então esta caixa é a saída
+ * que garante que o usuário nunca fique sem caminho de volta.
+ */
+async function loadDirectConversion(): Promise<void> {
+  try {
+    const stored = await chrome.storage.local.get(DIRECT_CONVERSION_KEY);
+    directToggle.checked = parseDirectConversion(stored[DIRECT_CONVERSION_KEY]);
+  } catch {
+    directToggle.checked = false;
+  }
+}
+
+async function persistDirectConversion(): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [DIRECT_CONVERSION_KEY]: directToggle.checked });
+  } catch {
+    // Ignora falhas de armazenamento.
+  }
+}
+
 async function persistSettings(): Promise<void> {
   try {
     await chrome.storage.local.set({ printSettings: savedSettings });
@@ -315,6 +339,7 @@ if (!isPdf) {
 }
 
 filename.addEventListener('input', () => { filenameEdited = true; });
+directToggle.addEventListener('change', () => { void persistDirectConversion(); });
 updateButton.addEventListener('click', () => { void convert(); });
 for (const button of orientationButtons) {
   button.addEventListener('click', () => {
@@ -357,6 +382,7 @@ window.addEventListener('pagehide', () => {
 }, { once: true });
 
 await loadSavedSettings();
+await loadDirectConversion();
 renderPaperState();
 
 if (new URLSearchParams(location.search).get('error') || sourceTabId === null) {

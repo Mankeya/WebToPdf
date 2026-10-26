@@ -1,5 +1,6 @@
 import { CONVERSION_FORMATS, findFormat } from '../shared/format';
 import type { ConversionFormat } from '../shared/format';
+import { DIRECT_CONVERSION_KEY, parseDirectConversion } from '../shared/direct';
 import { buildPreviewUrl, isSupportedPage } from '../shared/preview-url';
 import './styles.css';
 
@@ -11,6 +12,15 @@ function element<T extends HTMLElement>(selector: string): T {
 
 const list = element<HTMLUListElement>('#format-list');
 const status = element<HTMLElement>('#popup-status');
+const directToggle = element<HTMLInputElement>('#direct-conversion');
+
+// Anexado de forma síncrona, antes de qualquer `await`: um clique no
+// interruptor nunca pode chegar antes do listener estar vivo.
+directToggle.addEventListener('change', () => {
+  void persistDirectConversion(directToggle.checked);
+  if (directToggle.checked) status.textContent = 'Pronto: o próximo clique no ícone abre o PDF direto. Para voltar ao menu, desligue na prévia.';
+  else status.textContent = '';
+});
 
 const ICON_PATHS: Record<ConversionFormat, string[]> = {
   pdf: ['M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M14 3v5h5', 'M9 13h6', 'M9 17h4'],
@@ -100,4 +110,67 @@ async function openPreview(format: ConversionFormat): Promise<void> {
   }
 }
 
-renderFormats();
+/**
+ * Modo conversão direta: um clique no ícone leva à prévia do PDF já
+ * convertendo, sem desenhar o menu. As validações são as mesmas do menu — a
+ * única diferença é que página incompatível vira a prévia com o aviso, já que
+ * não há tela de menu para exibir o erro.
+ */
+async function openDirectPreview(): Promise<void> {
+  status.textContent = 'Abrindo a prévia do PDF…';
+  let tabId: number | undefined;
+  let tabUrl: string | undefined;
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    tabId = tab?.id;
+    tabUrl = tab?.url;
+  } catch {
+    status.textContent = 'Não foi possível identificar a aba atual. Tente novamente.';
+    return;
+  }
+  if (tabId === undefined) {
+    status.textContent = 'Não foi possível identificar a aba atual. Tente novamente.';
+    return;
+  }
+  const supported = tabUrl === undefined || isSupportedPage(tabUrl);
+  try {
+    // Sem URL legível o `tabId` viaja mesmo assim: a prévia e o service
+    // worker revalidam antes de converter, como no fluxo do menu.
+    const previewTabId = supported ? tabId : undefined;
+    await chrome.tabs.create({ url: buildPreviewUrl(chrome.runtime.getURL('preview.html'), previewTabId, 'pdf') });
+    window.close();
+  } catch {
+    status.textContent = 'Não foi possível abrir a prévia. Tente novamente.';
+  }
+}
+
+/**
+ * Lê a preferência de conversão direta. Falha de leitura conta como
+ * desligado: o usuário sempre volta ao menu, nunca fica sem saída.
+ */
+async function readDirectConversion(): Promise<boolean> {
+  try {
+    const stored = await chrome.storage.local.get(DIRECT_CONVERSION_KEY);
+    return parseDirectConversion(stored[DIRECT_CONVERSION_KEY]);
+  } catch {
+    return false;
+  }
+}
+
+async function persistDirectConversion(enabled: boolean): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [DIRECT_CONVERSION_KEY]: enabled });
+  } catch {
+    // Sem persistência a escolha vale só nesta abertura do menu.
+  }
+}
+
+async function boot(): Promise<void> {
+  if (await readDirectConversion()) {
+    await openDirectPreview();
+    return;
+  }
+  renderFormats();
+}
+
+void boot();

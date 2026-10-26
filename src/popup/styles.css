@@ -135,3 +135,63 @@ button { font: inherit; color: inherit; }
   color: var(--red-600);
   font-size: 0.75rem;
 }
+
+/* ---------- Conversão direta ---------- */
+
+.direct-option {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--navy-050);
+}
+
+.direct-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.direct-label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.direct-track {
+  flex: none;
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--navy-100);
+  transition: background 120ms ease;
+}
+
+.direct-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(15 29 43 / 30%);
+  transition: transform 120ms ease;
+}
+
+.direct-label input:checked + .direct-track { background: var(--red-600); }
+.direct-label input:checked + .direct-track .direct-thumb { transform: translateX(16px); }
+.direct-label input:focus-visible + .direct-track { outline: 3px solid var(--red-500); outline-offset: 2px; }
+
+.direct-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.direct-text small {
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  font-weight: 400;
+}
