@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.6.1 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.6.1">download</a></sub>
+  <sub>Versão 1.6.2 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.6.2">download</a></sub>
 </p>
 
 <p align="center">
@@ -30,17 +30,18 @@
 
 ## O que é
 
-Clicar no ícone do WEBtoPDF abre um **menu de formatos**. Escolher **PDF**, **PNG** ou **Texto** abre a prévia da página atual, **já convertida**. Você revisa o resultado e só então salva o arquivo — no PDF dá para ajustar a impressão antes. Markdown chega na próxima versão — um formato por versão, cada um testado antes de entrar.
+Clicar no ícone do WEBtoPDF abre um **menu de formatos**. Escolher **PDF**, **PDF da tela**, **PNG** ou **Texto** abre a prévia da página atual, **já convertida**. Você revisa o resultado e só então salva o arquivo — no PDF dá para ajustar a impressão antes. Markdown chega na próxima versão — um formato por versão, cada um testado antes de entrar.
 
-O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **texto selecionável** e **links clicáveis**, respeitando o layout de impressão do site.
+O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **texto selecionável** e **links clicáveis**, respeitando o layout de impressão do site. O **PDF da tela** é diferente: ele embute uma captura da área visível como uma folha de imagem fiel ao que você está vendo — feito para páginas com menus que se fecham sozinhos quando você tira o foco.
 
 ## Recursos
 
 | Recurso | Detalhe |
 |---|---|
-| **Menu de formatos** | Um clique no ícone abre o menu; PDF, PNG e Texto já estão disponíveis e os próximos formatos chegam um por versão |
+| **Menu de formatos** | Um clique no ícone abre o menu; PDF, PDF da tela, PNG e Texto já estão disponíveis e os próximos formatos chegam um por versão |
 | **Conversão direta (opcional)** | Ligue no menu e o ícone passa a abrir o PDF direto, sem escolher formato; desligue na prévia |
 | **PDF paginado** | Motor de impressão do Chrome, com texto selecionável e links clicáveis |
+| **PDF da tela** | A área visível vira uma folha de imagem fiel ao que está na tela — para páginas com menus que fecham sozinhos; o `Ctrl+Shift+S` captura sem passar pelo menu |
 | **PNG da página inteira** | Captura a página toda com a aparência da tela, em uma única imagem |
 | **Texto em `.txt`** | Só o texto visível da página, em UTF-8 com BOM, pronto para o Bloco do Windows |
 | **Prévia imediata** | A aba atual já aparece convertida ao abrir a tela |
@@ -59,6 +60,10 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 <!-- novidades -->
 
+### v1.6.2 — 26/10/2026
+
+- Novo formato PDF da tela para páginas com menus que fecham sozinhos: a captura acontece sozinha quando o menu abre, e o atalho Ctrl+Shift+S captura sem passar pelo menu
+
 ### v1.6.1 — 26/10/2026
 
 - Design da prévia corrigido (ícones e caixas desalinhados na barra lateral) e novo botão de modo claro/escuro na tela de prévia.
@@ -66,10 +71,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 ### v1.6.0 — 26/10/2026
 
 - Conversão direta em 1 clique (opcional): ligue no menu e o ícone abre o PDF já convertido, sem escolher formato.
-
-### v1.5.0 — 23/10/2026
-
-- Salvar a página atual como arquivo de texto (.txt) pelo menu de formatos.
 
 <!-- /novidades -->
 
@@ -88,10 +89,19 @@ Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O
 
 1. Abra qualquer página HTTP ou HTTPS.
 2. Clique no ícone **WEBtoPDF**.
-3. No menu de formatos, escolha **PDF**, **PNG** ou **Texto**. O formato que ainda não chegou aparece desabilitado, com o selo **Em breve**.
+3. No menu de formatos, escolha **PDF**, **PDF da tela**, **PNG** ou **Texto**. O formato que ainda não chegou aparece desabilitado, com o selo **Em breve**.
 4. Uma nova aba abre com a prévia.
-5. Em **PDF**, ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor. Em **PNG**, a captura é sempre a página inteira e o único ajuste é o nome do arquivo. Em **Texto**, a prévia mostra o texto da página como ele está na tela e o único ajuste também é o nome do arquivo.
-6. Clique em **Baixar PDF** (ou **Baixar PNG**, **Baixar Texto**) ou **Salvar como…**.
+5. Em **PDF**, ajuste as opções de impressão e clique em **Atualizar prévia**, se quiser. Em **página inteira**, o PDF vira uma única folha contínua com a altura do conteúdo; sites que definem quebras de página no CSS de impressão continuam sendo divididos — o Chrome respeita a intenção do autor. Em **PDF da tela**, a prévia mostra a captura da área visível como folha de imagem, sem texto selecionável; o único ajuste é o nome do arquivo. Em **PNG**, a captura é sempre a página inteira e o único ajuste é o nome do arquivo. Em **Texto**, a prévia mostra o texto da página como ele está na tela e o único ajuste também é o nome do arquivo.
+6. Clique em **Baixar PDF** (ou **Baixar PDF da tela**, **Baixar PNG**, **Baixar Texto**) ou **Salvar como…**.
+
+### PDF da tela: para menus que fecham sozinhos
+
+Alguns sites fecham menus e dropdowns no instante em que a página perde o foco — e o clique no ícone da extensão já rouba esse foco. O **PDF da tela** resolve isso do lado de dentro: no momento em que o menu abre, a extensão dispara uma captura da área visível, tentando registrar a tela antes do site limpar o menu. Depois é só escolher **PDF da tela** no menu e baixar a folha de imagem.
+
+Dois pontos honestos:
+
+- A captura é uma **corrida**: sites que fecham o menu instantaneamente no `blur` podem não deixar tempo. Para esses casos, o **`Ctrl+Shift+S`** é a forma garantida — ele captura a página **sem abrir o menu**, sem roubar foco, e já abre a prévia do PDF da tela.
+- O PDF da tela é uma **imagem**: sai fiel ao que está na tela (fundos, temas escuros, menus), mas **sem texto selecionável e sem links clicáveis**. Quando precisar de texto, use o PDF normal.
 
 ### Conversão direta em 1 clique (opcional)
 
@@ -108,12 +118,13 @@ O WEBtoPDF **não envia nada para fora do seu computador**.
 - Sem acesso a cookies, histórico de navegação ou lista de permissões de sites.
 - Os únicos dados guardados são as suas **preferências de impressão**, a opção de conversão direta e o tema (claro/escuro) da prévia, no perfil local do navegador.
 - O documento convertido (PDF, imagem ou texto) fica **apenas na memória** da aba da prévia e é descartado ao fechar ou recarregar a aba.
+- No **PDF da tela**, a captura antecipada fica **apenas na memória do service worker**, associada à aba e à URL, por no máximo **30 segundos** e no máximo quatro capturas — e é apagada ao navegar, fechar a aba ou expirar. Nada é gravado em disco, em `storage` ou enviado para fora.
 
 A extensão pede quatro permissões, todas com uso restrito e verificável:
 
 | Permissão | Para quê |
 |---|---|
-| `activeTab` | Ler URL e título da aba acionada (validação no menu e nome do arquivo) |
+| `activeTab` | Ler URL e título da aba acionada (validação no menu e nome do arquivo) e capturar a área visível para o PDF da tela |
 | `debugger` | Usar o motor de impressão, a captura de imagem e a leitura do texto visível do Chrome, sempre na aba que você escolheu |
 | `storage` | Lembrar as preferências de impressão |
 | `downloads` | Gravar o arquivo escolhido e evitar sobrescrita de arquivos |
@@ -126,6 +137,7 @@ Detalhes completos em [`docs/security.md`](docs/security.md) e [`SECURITY.md`](S
 - O DevTools aberto na aba original pode interromper a conversão.
 - O layout de impressão do site pode diferir do que você vê na tela.
 - Conteúdo que ainda não carregou por rolagem pode não aparecer.
+- No **PDF da tela**, a captura antecipada disputa com o próprio site: páginas que fecham menus instantaneamente no `blur` podem capturar a tela já sem o menu. Use o atalho `Ctrl+Shift+S`, que captura sem roubar o foco da página.
 - No **Texto**, só entra o que está visível na página renderizada: texto escondido, atributos e iframes inacessíveis ficam de fora — e uma página só de imagens é recusada com mensagem clara.
 - Documentos acima de **32 MB** ou conversões acima de **60 segundos** são recusados com mensagem clara.
 - A detecção de nomes repetidos usa o histórico de downloads do Chrome; arquivos baixados por outros meios não são detectados. Use **Salvar como…** quando precisar de garantia.

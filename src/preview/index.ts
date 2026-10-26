@@ -55,7 +55,7 @@ const printCards = [...document.querySelectorAll<HTMLElement>('.print-card')];
 const sourceTabId = parseSourceTabId(location.search);
 const format: ConversionFormat = parseFormatParam(location.search);
 const definition = findFormat(format) ?? findFormat('pdf')!;
-const isPdf = format === 'pdf';
+const isPdf = format === 'pdf' || format === 'screen-pdf';
 /** Formatos de texto: a prévia mostra o conteúdo extraído em `<pre>`. */
 const isText = format === 'txt';
 const formatLabel = definition.label;
@@ -234,7 +234,9 @@ async function convert(): Promise<void> {
     if (!filenameEdited) filename.value = createConversionFilename(result.title, definition.extension);
     if (isPdf) {
       const pages = await loadPdfViewer(result.bytes);
-      status.textContent = `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
+      status.textContent = format === 'screen-pdf'
+        ? 'PDF da tela pronto — área visível como imagem, sem texto selecionável.'
+        : `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
     } else if (isText) {
       showText(result.bytes);
       status.textContent = `${formatLabel} pronto.`;
@@ -373,6 +375,13 @@ if (!isPdf) {
   previewTitle.textContent = isText ? 'Prévia do texto' : 'Prévia da imagem';
   downloadButton.textContent = `Baixar ${formatLabel}`;
   filename.value = `pagina.${definition.extension}`;
+}
+
+if (format === 'screen-pdf') {
+  for (const card of printCards) card.hidden = true;
+  settingsTitle.textContent = 'Captura da tela';
+  previewTitle.textContent = 'PDF da área visível';
+  updateButton.hidden = true;
 }
 
 filename.addEventListener('input', () => { filenameEdited = true; });

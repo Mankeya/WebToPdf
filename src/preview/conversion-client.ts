@@ -13,7 +13,7 @@ export interface ConvertedFile {
  * no termo; os formatos de texto compartilham a mesma redação.
  */
 function clientMessages(format: ConversionFormat): { inconsistent: string; tooLarge: string; invalid: string; failed: string } {
-  if (format === 'pdf') {
+  if (format === 'pdf' || format === 'screen-pdf') {
     return {
       inconsistent: 'O PDF recebido do navegador estava inconsistente.',
       tooLarge: 'O PDF excedeu o limite inicial de 32 MB.',

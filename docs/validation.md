@@ -12,8 +12,8 @@
 
 ## Automatizado
 
-- `npm run check`: tipos, 150 testes unitários e build Vite.
-- `npm run test:e2e`: 35 testes em Chromium 156 (Playwright 1.64.1, headless) com perfil temporário.
+- `npm run check`: tipos, 168 testes unitários e build Vite.
+- `npm run test:e2e`: 38 testes em Chromium 156 (Playwright 1.64.1, headless) com perfil temporário.
   - impressão via debugger e liberação da conexão;
   - prévia real com texto selecionável, links e navegação de páginas;
   - ajustes aplicados somente ao pedir atualização e preferências lembradas;
@@ -26,6 +26,7 @@
   - conversão direta em 1 clique: padrão desligado, ligação persistida, clique leva à prévia PDF sem menu, página interna abre com aviso e a prévia desliga o modo de volta;
   - tema claro/escuro: padrão claro, alternância pelo cabeçalho, persistência entre recargas, interface escura com documento branco;
   - geometria da barra lateral (360px, `sticky`) e grade de papel (oito caixas iguais, nenhum texto vazando);
+  - PDF da tela: captura antecipada ausente não trava o menu, token ausente nunca cai para uma tela posterior e o PDF gerado renderiza os pixels capturados como folha única sem camada de texto;
   - página incompatível e extensão carregando corretamente.
 - `npm run release:check`: confere versão, CHANGELOG e README — o mesmo script que o CI usa no check **Release preparada**.
 - `npm run package`: gera `webtopdf-<versão>.zip` com manifesto, ícones, worker do PDF.js, cmaps e fontes.

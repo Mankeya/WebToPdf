@@ -4,6 +4,10 @@ import { DIRECT_CONVERSION_KEY, parseDirectConversion } from '../shared/direct';
 import { buildPreviewUrl, isSupportedPage } from '../shared/preview-url';
 import './styles.css';
 
+declare global {
+  var webtopdfEarlyCapture: Promise<{ token: string; tabId: number } | null> | undefined;
+}
+
 function element<T extends HTMLElement>(selector: string): T {
   const value = document.querySelector<T>(selector);
   if (!value) throw new Error(`Elemento obrigatório não encontrado: ${selector}`);
@@ -24,6 +28,7 @@ directToggle.addEventListener('change', () => {
 
 const ICON_PATHS: Record<ConversionFormat, string[]> = {
   pdf: ['M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M14 3v5h5', 'M9 13h6', 'M9 17h4'],
+  'screen-pdf': ['M4 5h16v14H4z', 'M5 17l5-5 4 4 3-3 2 4'],
   png: ['M4 5h16v14H4z', 'M8.5 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z', 'M5 17l4.5-5 3.5 3.5 2.5-2.5L19 17'],
   txt: ['M5 4h14v16H5z', 'M8 8h8', 'M8 12h8', 'M8 16h5'],
   md: ['M4 5h16v14H4z', 'M7 15V9l3 4 3-4v6', 'M16 9v6m0 0-2-2m2 2 2-2'],
@@ -103,7 +108,16 @@ async function openPreview(format: ConversionFormat): Promise<void> {
     return;
   }
   try {
-    await chrome.tabs.create({ url: buildPreviewUrl(chrome.runtime.getURL('preview.html'), tabId, format) });
+    const url = new URL(buildPreviewUrl(chrome.runtime.getURL('preview.html'), tabId, format));
+    if (format === 'screen-pdf') {
+      const snapshot = await globalThis.webtopdfEarlyCapture;
+      if (!snapshot || snapshot.tabId !== tabId) {
+        status.textContent = 'Não foi possível guardar a tela nesta abertura. Tente novamente ou use o PDF normal.';
+        return;
+      }
+      url.searchParams.set('snapshot', snapshot.token);
+    }
+    await chrome.tabs.create({ url: url.href });
     window.close();
   } catch {
     status.textContent = 'Não foi possível abrir a prévia. Tente novamente.';

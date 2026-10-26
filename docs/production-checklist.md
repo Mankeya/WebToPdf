@@ -15,13 +15,13 @@ npm run package
 3. **Carregar sem compactação** → selecione a pasta `dist` (não o `.zip`).
 4. Fixe o ícone na barra.
 
-> Para validar exatamente o que será publicado, descompacte `webtopdf-1.6.1.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
+> Para validar exatamente o que será publicado, descompacte `webtopdf-1.6.2.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
 
 ## Resultado esperado por etapa
 
 | # | Ação | Resultado esperado |
 |---|---|---|
-| 1 | Abra `https://example.com`, clique no ícone e escolha **PDF** no menu | O menu lista os formatos (PDF, PNG e Texto ativos; Markdown com **"Em breve"**) e abre nova aba com a prévia; status **"PDF pronto"** |
+| 1 | Abra `https://example.com`, clique no ícone e escolha **PDF** no menu | O menu lista os formatos (PDF, PDF da tela, PNG e Texto ativos; Markdown com **"Em breve"**) e abre nova aba com a prévia; status **"PDF pronto"** |
 | 2 | Observe a barra superior durante a conversão | Chrome pode mostrar aviso temporário de depuração; some ao terminar |
 | 3 | Verifique o texto | Clique e arraste sobre o PDF: o texto é selecionável |
 | 4 | Verifique os links | O link do rodapé abre em nova aba |
@@ -52,6 +52,10 @@ npm run package
 | 29 | Confira a barra lateral da prévia com a janela maximizada | Os 8 retângulos do cartão Papel têm a mesma altura e nenhum rótulo ("Tabloid", "Sob medida") vaza da caixinha |
 | 30 | No cabeçalho da prévia, clique no botão do tema (sol/lua) | Interface inteira fica escura (sidebar, cartões, toolbars) e **o documento continua com fundo branco** |
 | 31 | Feche e reabra a prévia | Ela já abre no tema escolhido; clicar de volta no botão restaura o claro e persiste |
+| 32 | Abra um menu de usuário num site real, clique no ícone e escolha **PDF da tela** | Prévia abre como **folha de imagem** (status "PDF da tela pronto"), sem texto selecionável e sem os cards de ajustes de impressão; se o site fechar o menu antes da captura, o menu sai fechado — o PDF normal continua disponível |
+| 33 | Com a página em foco (sem menu aberto), aperte **Ctrl+Shift+S** | Sem passar pelo menu: abre a prévia do **PDF da tela** com a captura da área visível, mesmo em sites que fecham menus no `blur` |
+| 34 | Na prévia do PDF da tela, clique em **Baixar** | Arquivo `.pdf` salvo, abre no leitor de PDF como uma folha de imagem única, com o nome exibido |
+| 35 | Abra o menu, espere mais de 30 s e escolha **PDF da tela** | Captura expirou: mensagem clara orientando abrir a extensão de novo; nenhuma captura de outra página é usada no lugar |
 
 ## Verificações de privacidade
 

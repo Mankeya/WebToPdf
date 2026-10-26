@@ -75,10 +75,20 @@ downloads do Chrome. Nenhum byte sai do perfil do navegador.
   memória, a cópia usada pela prévia e o blob do download. Documentos maiores
   devem ser divididos pelo usuário.
 
+## Captura antecipada (PDF da tela)
+
+- A captura é disparada por `public/early-capture.js`, um script clássico (`'self'`, sem inline, sem `eval`) carregado antes do bundle do popup; ele só usa `chrome.tabs.captureVisibleTab` na aba ativa, concedida pela permissão `activeTab` já existente — **nenhuma permissão nova**.
+- A imagem JPEG viaja por `chrome.runtime.sendMessage` para o service worker, que valida tudo antes de aceitar: só mensagens vindas do próprio `popup.html`, só `data:image/jpeg;base64,`, só abas `http`/`https`, aba ativa, URL idêntica à que originou a captura e não anônima.
+- O cache mora **apenas em RAM** (`src/background/snapshot-cache.ts`): no máximo 4 entradas, expiram em 30 s, cada entrada tem um token UUID de uso único, e as capturas são apagadas ao navegar, fechar a aba, trocar de URL ou expirar. Nada é gravado em `storage`, disco ou rede.
+- Na conversão, o token só resolve se a aba e a URL continuarem as mesmas da captura — uma navegação no meio invalida o token, e o erro orienta a abrir a extensão de novo. Um token ausente ou inválido **nunca** cai para uma captura posterior: a conversão falha com mensagem clara.
+- O PDF da tela é montado por `src/shared/image-pdf.ts`: um contêiner PDF mínimo com `/Filter /DCTDecode` embutindo os bytes JPEG exatamente como vieram, sem reinterpretação, sem fontes, sem JavaScript e sem recursos externos. O PDF resultante não tem camada de texto nem links.
+- O atalho `capture-screen-pdf` (`Ctrl+Shift+S`) passa pelo `chrome.commands` nativo: a página nunca perde o foco, então não há blur para fechar menus — é o caminho garantido quando a captura antecipada perde a corrida.
+
 ## Dados sensíveis
 
 - O documento convertido existe apenas como `Blob` na aba da prévia e é descartado ao fechar ou recarregar a aba.
 - As preferências salvas são apenas papel, orientação, margens, escala, fundos, cabeçalho/rodapé, a opção de conversão direta e o tema da prévia (claro/escuro).
+- A captura antecipada do PDF da tela existe apenas em RAM no service worker (4 entradas, 30 s, invalidada por navegação/fechamento da aba).
 - Nada é enviado a servidores, não há conta, telemetria ou analytics.
 
 ## Riscos residuais

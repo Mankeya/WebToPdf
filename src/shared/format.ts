@@ -1,4 +1,4 @@
-export type ConversionFormat = 'pdf' | 'png' | 'txt' | 'md';
+export type ConversionFormat = 'pdf' | 'png' | 'txt' | 'md' | 'screen-pdf';
 
 export interface FormatDefinition {
   id: ConversionFormat;
@@ -16,6 +16,7 @@ export interface FormatDefinition {
 
 export const CONVERSION_FORMATS: readonly FormatDefinition[] = Object.freeze([
   { id: 'pdf', label: 'PDF', description: 'Documento pronto para ler e imprimir', extension: 'pdf', available: true },
+  { id: 'screen-pdf', label: 'PDF da tela', description: 'Área visível como imagem, sem texto selecionável', extension: 'pdf', available: true },
   { id: 'png', label: 'PNG', description: 'Imagem da página inteira', extension: 'png', available: true },
   { id: 'txt', label: 'Texto', description: 'Só o texto da página, em .txt', extension: 'txt', available: true },
   { id: 'md', label: 'Markdown', description: 'Texto estruturado, em .md', extension: 'md', available: false },

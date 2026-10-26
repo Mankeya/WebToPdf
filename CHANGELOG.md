@@ -4,6 +4,20 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.6.2] — 2026-10-26
+
+### Adicionado
+
+- **PDF da tela**: novo formato no menu que transforma a área visível da página em PDF de imagem — uma folha fiel ao que está na tela, sem texto selecionável. A captura é feita automaticamente no instante em que o menu abre, para páginas com menus que se fecham sozinhos ao perder o foco (a captura tenta registrar o menu antes que o site o feche; sites que fecham instantaneamente no blur continuam saindo sem o menu — nesse caso o PDF normal com texto segue disponível).
+- **Atalho Ctrl+Shift+S**: captura a tela com a página ainda em foco e abre a prévia do PDF da tela, sem passar pelo menu — a forma garantida para menus que fecham no primeiro `blur`.
+
+### Técnico
+
+- Captura antecipada em `public/early-capture.js` (script clássico bloqueante no `<head>` do popup, antes do bundle do menu), que grava os pixels no service worker por mensagem `store-snapshot`.
+- Cache de capturas apenas em RAM (`src/background/snapshot-cache.ts`): no máximo 4 entradas, expiram em 30 s, tokens UUID de uso único, invalidados ao navegar/fechar a aba ou se a URL mudar — nenhuma captura persiste em disco ou storage.
+- Writer mínimo `src/shared/image-pdf.ts` embute o JPEG da captura num PDF (`/Filter /DCTDecode`), sem dependência nova.
+- Comando `capture-screen-pdf` no manifest; nenhuma permissão nova (a captura usa `activeTab`, já concedido).
+
 ## [1.6.1] — 2026-10-26
 
 ### Corrigido
