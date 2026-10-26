@@ -42,6 +42,12 @@ button, input, select { font: inherit; color: inherit; }
   width: auto;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .privacy-badge {
   display: inline-flex;
   align-items: center;
@@ -63,6 +69,25 @@ button, input, select { font: inherit; color: inherit; }
   box-shadow: 0 0 0 3px rgb(248 0 16 / 20%);
 }
 
+/* ---------- Alternador de tema ---------- */
+
+.theme-toggle {
+  border-color: rgb(255 255 255 / 18%);
+  background: rgb(255 255 255 / 8%);
+  color: #cddaea;
+}
+
+.theme-toggle:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 34%);
+  background: rgb(255 255 255 / 16%);
+  color: #fff;
+}
+
+/* No claro mostra a lua (ir para o escuro); no escuro mostra o sol. */
+.theme-icon-moon { display: none; }
+[data-theme="dark"] .theme-icon-moon { display: block; }
+[data-theme="dark"] .theme-icon-sun { display: none; }
+
 /* ---------- Estrutura ---------- */
 
 .layout {
@@ -71,7 +96,11 @@ button, input, select { font: inherit; color: inherit; }
   min-height: calc(100vh - 72px);
 }
 
-.sidebar {
+/* `.preview-sidebar` (e não `.sidebar`): o CSS do PDF.js exporta uma classe
+   `.sidebar` com `width: 239px; position: relative`, que — vinda depois no
+   bundle — espremia a coluna inteira. Renomear evita briga de especificidade
+   com a folha de terceiros. */
+.preview-sidebar {
   display: flex;
   flex-direction: column;
   /* O Chrome não estica automaticamente um item de grade com position: sticky,
@@ -147,6 +176,9 @@ button, input, select { font: inherit; color: inherit; }
 .paper-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Altura igual em todas as linhas: rótulos de uma ou duas linhas não podem
+     deixar a caixinha mais alta que a vizinha. */
+  grid-auto-rows: minmax(74px, auto);
   gap: 0.4rem;
 }
 
@@ -154,8 +186,10 @@ button, input, select { font: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.35rem;
   min-width: 0;
+  height: 100%;
   padding: 0.5rem 0.15rem 0.45rem;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -184,6 +218,9 @@ button, input, select { font: inherit; color: inherit; }
 
 .paper-label {
   max-width: 100%;
+  /* Duas linhas reservadas para rótulos como "Sob medida": a caixa não muda
+     de altura e o rótulo nunca vaza para fora. */
+  min-height: 2.4em;
   color: var(--ink-soft);
   font-size: 0.63rem;
   font-weight: 600;
@@ -601,7 +638,7 @@ input[type="range"]:disabled { opacity: 0.45; }
 @media (max-width: 980px) {
   .layout { grid-template-columns: 1fr; }
 
-  .sidebar {
+  .preview-sidebar {
     position: static;
     width: 100%;
     height: auto;
@@ -613,3 +650,70 @@ input[type="range"]:disabled { opacity: 0.45; }
 
   .preview { padding: 1.25rem; }
 }
+
+/* ---------- Modo escuro ---------- */
+
+/* Só a interface da extensão: cabeçalho, sidebar, cartões, toolbars e
+   botões. O documento pré-visualizado (`.pdf-page`, `.image-container img`,
+   `.preview-text`) mantém fundo branco — é a simulação da folha impressa.
+   O seletor é `html[data-theme]` (e não só `[data-theme]`) para vencer o
+   `:root { color-scheme }` do CSS do PDF.js, que tem a mesma especificidade
+   e chega depois no bundle. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ink: #e7edf4;
+  --ink-soft: #b8c8d8;
+  --ink-faint: #8ba0b5;
+  --surface: #122131;
+  --surface-sunken: #0a1725;
+  --canvas: #071220;
+  --navy-100: #24405e;
+  --navy-050: #1a3049;
+  --navy-300: #48709a;
+  --red-050: #3a1114;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow: 0 4px 16px rgb(0 0 0 / 45%);
+  --shadow-lg: 0 18px 40px rgb(0 0 0 / 55%);
+
+  background: var(--surface-sunken);
+}
+
+/* O cabeçalho já é navy no claro; no escuro ele escurece junto e o badge
+   ganha um fundo próprio para manter o contraste do texto. */
+[data-theme="dark"] .app-header {
+  background: #060f19;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 6%), 0 10px 30px rgb(0 0 0 / 45%);
+}
+
+[data-theme="dark"] .privacy-badge {
+  border-color: rgb(255 255 255 / 16%);
+  background: rgb(255 255 255 / 6%);
+}
+
+/* Fundo dos contêineres de documento: a moldura fica escura, o papel não. */
+[data-theme="dark"] .pdf-container,
+[data-theme="dark"] .image-container,
+[data-theme="dark"] .text-container {
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 50%);
+}
+
+/* Segmentado e campos nativos precisam de cores escuras próprias. */
+[data-theme="dark"] .segmented button[aria-checked="true"] { color: var(--ink); }
+[data-theme="dark"] .paper-option[aria-checked="true"] { background: var(--red-050); }
+[data-theme="dark"] .button-ghost { color: var(--ink); }
+[data-theme="dark"] .icon-button { color: var(--ink); }
+[data-theme="dark"] .icon-button:hover:not(:disabled) { background: var(--navy-800); }
+[data-theme="dark"] .icon-button:disabled { background: var(--surface-sunken); }
+[data-theme="dark"] .button:disabled { background: var(--navy-700); color: var(--ink-faint); }
+[data-theme="dark"] .page-field input,
+[data-theme="dark"] .zoom-field select { color: var(--ink); }
+
+/* Cores fixas em navy que, no escuro, ficariam quase invisíveis. */
+[data-theme="dark"] .preview-heading h2 { color: var(--ink); }
+[data-theme="dark"] .field-value,
+[data-theme="dark"] .field-head output { color: var(--ink-soft); }
+[data-theme="dark"] .page-field input { background: var(--navy-800); }
+[data-theme="dark"] .page-count { color: var(--ink-faint); }
+[data-theme="dark"] .preview-heading p { color: var(--ink-soft); }

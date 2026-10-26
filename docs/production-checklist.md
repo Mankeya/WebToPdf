@@ -15,7 +15,7 @@ npm run package
 3. **Carregar sem compactação** → selecione a pasta `dist` (não o `.zip`).
 4. Fixe o ícone na barra.
 
-> Para validar exatamente o que será publicado, descompacte `webtopdf-1.6.0.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
+> Para validar exatamente o que será publicado, descompacte `webtopdf-1.6.1.zip` e carregue a pasta `webtopdf` extraída. A pasta `dist` serve para iteração rápida durante o desenvolvimento.
 
 ## Resultado esperado por etapa
 
@@ -49,6 +49,9 @@ npm run package
 | 26 | No fim do menu, ative **Conversão direta em 1 clique** | Interruptor liga, status avisa que o próximo clique abre o PDF direto |
 | 27 | Clique no ícone de novo na mesma aba | Menu não aparece; abre a prévia já com **"PDF pronto"** |
 | 28 | Na prévia, desligue **Conversão direta** (cartão na barra lateral) e clique no ícone | O menu de formatos volta a abrir; a opção continua desligada ao reabrir o navegador |
+| 29 | Confira a barra lateral da prévia com a janela maximizada | Os 8 retângulos do cartão Papel têm a mesma altura e nenhum rótulo ("Tabloid", "Sob medida") vaza da caixinha |
+| 30 | No cabeçalho da prévia, clique no botão do tema (sol/lua) | Interface inteira fica escura (sidebar, cartões, toolbars) e **o documento continua com fundo branco** |
+| 31 | Feche e reabra a prévia | Ela já abre no tema escolhido; clicar de volta no botão restaura o claro e persiste |
 
 ## Verificações de privacidade
 

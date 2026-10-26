@@ -8,7 +8,7 @@ Revisão aplicada à extensão WEBtoPDF. O objetivo é reduzir a superfície de 
 |---|---|---|
 | `activeTab` | Ler URL e título da aba quando o usuário clica no ícone | Evita `tabs` e `host_permissions`; só vale na aba acionada. O menu usa a URL para recusar páginas internas antes de abrir a prévia |
 | `debugger` | Executar `Page.printToPDF`, `Page.captureScreenshot` e ler o texto visível (`Runtime.evaluate` sobre `innerText`) na aba original | Exige o motor de impressão, o compositor e o layout do Chrome; nenhuma alternativa local existe |
-| `storage` | Persistir preferências de impressão e a opção de conversão direta | `chrome.storage.local`, sem sincronização em nuvem |
+| `storage` | Persistir preferências de impressão, a opção de conversão direta e o tema da prévia | `chrome.storage.local`, sem sincronização em nuvem |
 | `downloads` | Salvar o PDF e detectar colisões de nome | Necessário para rastrear a conclusão do download |
 
 Não há `host_permissions`, `content_scripts`, `web_accessible_resources`, `externally_connectable`, `<all_urls>` nem acesso a cookies. A extensão **não injeta scripts, HTML ou CSS nas páginas** e não altera o DOM da aba original. Do conteúdo da aba, a extensão lê o mínimo para o formato escolhido: PDF e PNG usam apenas o motor de impressão e o compositor; o TXT lê **uma única avaliação de `document.body.innerText`** — o texto visível na tela, na ordem exibida — pela mesma sessão do debugger, sem script persistente, sem observadores e sem que nada saia da máquina.
@@ -78,7 +78,7 @@ downloads do Chrome. Nenhum byte sai do perfil do navegador.
 ## Dados sensíveis
 
 - O documento convertido existe apenas como `Blob` na aba da prévia e é descartado ao fechar ou recarregar a aba.
-- As preferências salvas são apenas papel, orientação, margens, escala, fundos, cabeçalho/rodapé e a opção de conversão direta.
+- As preferências salvas são apenas papel, orientação, margens, escala, fundos, cabeçalho/rodapé, a opção de conversão direta e o tema da prévia (claro/escuro).
 - Nada é enviado a servidores, não há conta, telemetria ou analytics.
 
 ## Riscos residuais

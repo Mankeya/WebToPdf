@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.6.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.6.0">download</a></sub>
+  <sub>Versão 1.6.1 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.6.1">download</a></sub>
 </p>
 
 <p align="center">
@@ -54,9 +54,14 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 | **Nunca sobrescreve** | Nomes repetidos recebem sufixo, como `relatório (1).pdf` |
 | **Duas formas de salvar** | **Baixar** na pasta do navegador e **Salvar como…** com o diálogo nativo |
 | **Preferências lembradas** | Suas últimas opções de impressão sobrevivem ao reinício do navegador |
+| **Modo claro/escuro** | Botão no cabeçalho da prévia; o tema fica salvo e o documento permanece branco |
 | **Interface em português** | Toda a extensão, do botão ao mensaje de erro |
 
 <!-- novidades -->
+
+### v1.6.1 — 26/10/2026
+
+- Design da prévia corrigido (ícones e caixas desalinhados na barra lateral) e novo botão de modo claro/escuro na tela de prévia.
 
 ### v1.6.0 — 26/10/2026
 
@@ -65,11 +70,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 ### v1.5.0 — 23/10/2026
 
 - Salvar a página atual como arquivo de texto (.txt) pelo menu de formatos.
-
-### v1.4.0 — 23/10/2026
-
-- PNG no menu de formatos: salve a página inteira como imagem, com a aparência exata da tela.
-- O nome do arquivo acompanha o formato escolhido, com `.png` para imagens.
 
 <!-- /novidades -->
 
@@ -106,7 +106,7 @@ O WEBtoPDF **não envia nada para fora do seu computador**.
 - Sem servidores, sem conta, sem telemetria, sem publicidade, sem análise de uso.
 - A extensão **não injeta scripts, HTML ou CSS** nas páginas e não altera o que você está vendo. De conteúdo do site, ela lê apenas o necessário para o formato escolhido: no PDF e no PNG o trabalho é todo do motor de impressão e do compositor do Chrome; no **Texto**, uma única leitura do texto visível na tela (`innerText`) da aba que você escolheu converter — que fica só na sua máquina.
 - Sem acesso a cookies, histórico de navegação ou lista de permissões de sites.
-- Os únicos dados guardados são as suas **preferências de impressão** e a opção de conversão direta, no perfil local do navegador.
+- Os únicos dados guardados são as suas **preferências de impressão**, a opção de conversão direta e o tema (claro/escuro) da prévia, no perfil local do navegador.
 - O documento convertido (PDF, imagem ou texto) fica **apenas na memória** da aba da prévia e é descartado ao fechar ou recarregar a aba.
 
 A extensão pede quatro permissões, todas com uso restrito e verificável:

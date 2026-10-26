@@ -4,6 +4,22 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.6.1] — 2026-10-26
+
+### Corrigido
+
+- **Design da prévia**: a barra lateral estava espremida para 239px em vez de 360px — o CSS do visualizador de PDF (biblioteca de terceiros) exportava uma classe `.sidebar` que colidia com a nossa e era aplicada por cima. Com isso os cartões ficavam apertados, o retângulo de "Página inteira" deixava a caixinha mais alta que as vizinhas e rótulos como "Tabloid" e "Sob medida" vazavam para fora das caixas do cartão Papel. A classe foi renomeada (`preview-sidebar`) e a grade uniformizada: as oito caixinhas agora têm a mesma altura e nenhum texto vaza.
+
+### Adicionado
+
+- **Modo claro/escuro na prévia**: botão (sol/lua) no cabeçalho, ao lado de "Processamento local". O tema escuro atinge somente a interface da extensão — o documento pré-visualizado permanece com fundo branco, como a simulação da folha impressa. A escolha fica salva e a prévia já abre no tema escolhido; o padrão continua sendo o claro.
+
+### Técnico
+
+- `src/shared/theme.ts` com `parseTheme` (só `'dark'` estrito vira escuro, o resto é claro) e a chave `theme` em `chrome.storage.local`.
+- Tema aplicado por `html[data-theme="dark"]` — o seletor com elemento vence o `:root { color-scheme }` do CSS do PDF.js, que tem a mesma especificidade e chega depois no bundle.
+- Novo teste E2E cobre tema (padrão, alternância, persistência, papel branco) e a geometria da grade de papel (sidebar 360px, alturas iguais, zero overflow).
+
 ## [1.6.0] — 2026-10-26
 
 ### Adicionado
