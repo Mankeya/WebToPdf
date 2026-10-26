@@ -12,6 +12,15 @@ function element<T extends HTMLElement>(selector: string): T {
 
 const list = element<HTMLUListElement>('#format-list');
 const status = element<HTMLElement>('#popup-status');
+const directToggle = element<HTMLInputElement>('#direct-conversion');
+
+// Anexado de forma síncrona, antes de qualquer `await`: um clique no
+// interruptor nunca pode chegar antes do listener estar vivo.
+directToggle.addEventListener('change', () => {
+  void persistDirectConversion(directToggle.checked);
+  if (directToggle.checked) status.textContent = 'Pronto: o próximo clique no ícone abre o PDF direto. Para voltar ao menu, desligue na prévia.';
+  else status.textContent = '';
+});
 
 const ICON_PATHS: Record<ConversionFormat, string[]> = {
   pdf: ['M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M14 3v5h5', 'M9 13h6', 'M9 17h4'],
@@ -162,13 +171,6 @@ async function boot(): Promise<void> {
     return;
   }
   renderFormats();
-  const toggle = element<HTMLInputElement>('#direct-conversion');
-  toggle.checked = false;
-  toggle.addEventListener('change', () => {
-    void persistDirectConversion(toggle.checked);
-    if (toggle.checked) status.textContent = 'Pronto: o próximo clique no ícone abre o PDF direto. Para voltar ao menu, desligue na prévia.';
-    else status.textContent = '';
-  });
 }
 
 void boot();
