@@ -4,6 +4,8 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.6.2] — 2026-10-26
+
 ### Adicionado
 
 - **PDF da tela**: novo formato no menu que transforma a área visível da página em PDF de imagem — uma folha fiel ao que está na tela, sem texto selecionável. A captura é feita automaticamente no instante em que o menu abre, para páginas com menus que se fecham sozinhos ao perder o foco (a captura tenta registrar o menu antes que o site o feche; sites que fecham instantaneamente no blur continuam saindo sem o menu — nesse caso o PDF normal com texto segue disponível).

@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.6.1 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.6.1">download</a></sub>
+  <sub>Versão 1.6.2 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.6.2">download</a></sub>
 </p>
 
 <p align="center">
@@ -60,6 +60,10 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 <!-- novidades -->
 
+### v1.6.2 — 26/10/2026
+
+- Novo formato PDF da tela para páginas com menus que fecham sozinhos: a captura acontece sozinha quando o menu abre, e o atalho Ctrl+Shift+S captura sem passar pelo menu
+
 ### v1.6.1 — 26/10/2026
 
 - Design da prévia corrigido (ícones e caixas desalinhados na barra lateral) e novo botão de modo claro/escuro na tela de prévia.
@@ -67,10 +71,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 ### v1.6.0 — 26/10/2026
 
 - Conversão direta em 1 clique (opcional): ligue no menu e o ícone abre o PDF já convertido, sem escolher formato.
-
-### v1.5.0 — 23/10/2026
-
-- Salvar a página atual como arquivo de texto (.txt) pelo menu de formatos.
 
 <!-- /novidades -->
 
