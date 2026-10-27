@@ -13,6 +13,32 @@ test('captura indisponível não bloqueia o menu nem produz um PDF da página er
   expect(errors).toEqual([]);
 });
 
+test('captura guardada atravessa conversão OCR até a prévia com texto', async ({ context, extensionWorker, extensionId, fixtureUrl }) => {
+  const tabId = await extensionWorker.evaluate(async (url) => (await chrome.tabs.create({ url })).id!, fixtureUrl);
+  const source = context.pages().find((page) => page.url() === fixtureUrl) ?? await context.waitForEvent('page');
+  await source.waitForLoadState('load');
+  const image = `data:image/jpeg;base64,${(await source.screenshot({ type: 'jpeg' })).toString('base64')}`;
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await source.bringToFront();
+  // Playwright não aciona a barra de ferramentas para conceder activeTab.
+  // Simula somente os metadados que esse gesto liberaria; OCR e mensagens são reais.
+  await extensionWorker.evaluate(({ tabId, url }) => {
+    const get = chrome.tabs.get.bind(chrome.tabs);
+    chrome.tabs.get = (async (id: number) => {
+      const tab = await get(id);
+      return id === tabId ? { ...tab, url } : tab;
+    }) as typeof chrome.tabs.get;
+  }, { tabId, url: fixtureUrl });
+  const snapshot = await popup.evaluate(async (data) => chrome.runtime.sendMessage({ type: 'store-snapshot', ...data }), { tabId, url: fixtureUrl, data: image });
+  expect(snapshot.token).toBeTruthy();
+  const preview = await context.newPage();
+  await preview.goto(`chrome-extension://${extensionId}/preview.html?sourceTabId=${tabId}&format=screen-pdf&snapshot=${snapshot.token}`);
+  await expect(preview.getByRole('status')).toContainText('com texto reconhecido', { timeout: 30_000 });
+  await expect(preview.locator('.textLayer')).not.toBeEmpty();
+  await expect(preview.locator('#download-pdf')).toBeEnabled();
+});
+
 test('token ausente não substitui a captura por uma tela posterior', async ({ context, extensionWorker, extensionId, fixtureUrl }) => {
   const tabId = await extensionWorker.evaluate(async (url) => (await chrome.tabs.create({ url })).id, fixtureUrl);
   const preview = await context.newPage();

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 const packageVersion = JSON.parse(await readFile(resolve('package.json'), 'utf8')).version;
 
-const ALLOWED_PERMISSIONS = new Set(['activeTab', 'debugger', 'storage', 'downloads']);
+const ALLOWED_PERMISSIONS = new Set(['activeTab', 'debugger', 'storage', 'downloads', 'offscreen']);
 const FORBIDDEN_KEYS = ['host_permissions', 'content_scripts', 'web_accessible_resources', 'externally_connectable', 'declarative_net_request', 'proxy', 'management', 'nativeMessaging'];
 const REQUIRED_CSP_DIRECTIVES = {
   'script-src': ["'self'"],
@@ -67,7 +67,7 @@ if (typeof csp !== 'string' || csp.length === 0) {
     }
   }
   const scriptSrc = directives.get('script-src') ?? [];
-  if (scriptSrc.some((value) => value.includes('unsafe-eval'))) problems.push('CSP script-src permite unsafe-eval');
+  if (scriptSrc.includes("'unsafe-eval'")) problems.push('CSP script-src permite unsafe-eval JavaScript');
 }
 
 for (const size of ['16', '32', '48', '128']) {
