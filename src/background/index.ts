@@ -3,23 +3,41 @@ import { isFormatAvailable } from '../shared/format';
 import { CONVERSION_PORT, CONVERSION_TIMEOUT_MS, ConversionError } from '../shared/conversion';
 import type { ConversionEvent } from '../shared/conversion';
 import { parsePrintSettings } from '../shared/settings';
-import { convertTabToPdf, convertTabToPng, convertTabToTxt } from './converter';
+import { convertTabToPng, convertTabToTxt } from './converter';
 import { buildPreviewUrl } from '../shared/preview-url';
+import { cancelEarlyPrint, convertTabToPdfWithEarlyPrint, settleEarlyPrint, startEarlyPrint } from './early-print';
 import { captureSnapshot, convertSnapshot, removeSnapshots, storeSnapshot } from './snapshots';
 
-chrome.tabs.onRemoved.addListener(removeSnapshots);
+chrome.tabs.onRemoved.addListener((tabId) => {
+  removeSnapshots(tabId);
+  cancelEarlyPrint(tabId);
+});
 chrome.tabs.onUpdated.addListener((tabId, change) => {
-  if (change.status === 'loading' || change.url) removeSnapshots(tabId);
+  if (change.status === 'loading' || change.url) {
+    removeSnapshots(tabId);
+    cancelEarlyPrint(tabId);
+  }
 });
 
 chrome.commands.onCommand.addListener((command) => {
-  if (command !== 'capture-screen-pdf') return;
-  void captureSnapshot().then(async (snapshot) => {
-    if (!snapshot) return;
-    const url = new URL(buildPreviewUrl(chrome.runtime.getURL('preview.html'), snapshot.tabId, 'screen-pdf'));
-    url.searchParams.set('snapshot', snapshot.token);
-    await chrome.tabs.create({ url: url.href });
-  }).catch(() => undefined);
+  if (command === 'capture-screen-pdf') {
+    void captureSnapshot().then(async (snapshot) => {
+      if (!snapshot) return;
+      const url = new URL(buildPreviewUrl(chrome.runtime.getURL('preview.html'), snapshot.tabId, 'screen-pdf'));
+      url.searchParams.set('snapshot', snapshot.token);
+      await chrome.tabs.create({ url: url.href });
+    }).catch(() => undefined);
+    return;
+  }
+  if (command !== 'print-pdf-now') return;
+  // "PDF agora": a página segue em foco enquanto o PDF é gerado (nenhum menu
+  // perde o foco antes da impressão); a prévia abre em seguida, pronta.
+  void (async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab || tab.id === undefined) return;
+    await startEarlyPrint(tab.id);
+    await chrome.tabs.create({ url: buildPreviewUrl(chrome.runtime.getURL('preview.html'), tab.id, 'pdf') });
+  })().catch(() => undefined);
 });
 
 const activeTabs = new Set<number>();
@@ -111,10 +129,17 @@ chrome.runtime.onConnect.addListener((port) => {
     const convert = requestedFormat === 'screen-pdf'
       ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertSnapshot(tabId, snapshotToken, onChunk, signal)
       : requestedFormat === 'pdf'
-      ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToPdf(tabId, settings, onChunk, signal)
-      : requestedFormat === 'txt'
-        ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToTxt(tabId, onChunk, signal)
-        : (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToPng(tabId, onChunk, signal);
+      // O PDF pode sair da impressão antecipada do menu (cache de uso único,
+      // amarrado à URL e às configurações); sem casamento, reimprime ao vivo.
+      ? (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => convertTabToPdfWithEarlyPrint(tabId, settings, onChunk, signal)
+      : async (onChunk: (data: string, byteLength: number) => void, signal: AbortSignal) => {
+          // PNG e TXT não consomem o PDF antecipado: a impressão em voo só
+          // seguraria o debugger da aba, então é abortada e esperada.
+          await settleEarlyPrint(tabId);
+          return requestedFormat === 'txt'
+            ? convertTabToTxt(tabId, onChunk, signal)
+            : convertTabToPng(tabId, onChunk, signal);
+        };
     void convert((data, byteLength) => send({ type: 'chunk', data, byteLength }), controller.signal)
       .then((result) => send({ type: 'complete', ...result }))
       .catch((error: unknown) => {
@@ -135,6 +160,13 @@ chrome.runtime.onConnect.addListener((port) => {
 
 chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
   if (typeof message !== 'object' || message === null || !('type' in message)) return false;
+  if (message.type === 'early-print') {
+    // Somente o popup, na origem legítima, pode pedir a impressão antecipada.
+    if (sender?.id !== chrome.runtime.id || sender.url !== chrome.runtime.getURL('popup.html')) return false;
+    if (!('tabId' in message) || typeof message.tabId !== 'number') return false;
+    void startEarlyPrint(message.tabId).then((ok) => sendResponse({ ok })).catch(() => sendResponse({ ok: false }));
+    return true;
+  }
   if (message.type === 'store-snapshot') {
     if (sender?.id !== chrome.runtime.id || sender.url !== chrome.runtime.getURL('popup.html')) return false;
     void storeSnapshot(message).then((token) => sendResponse({ token })).catch(() => sendResponse({ token: null }));

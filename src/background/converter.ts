@@ -60,6 +60,50 @@ async function readContentSize(target: { tabId: number }): Promise<ContentSize> 
   return { width: Math.max(size.width, 1), height: Math.max(size.height, 1) };
 }
 
+/**
+ * Parâmetros de papel do `Page.printToPDF`, comuns ao fluxo normal e à
+ * impressão antecipada do menu: os dois caminhos precisam gerar o mesmo PDF
+ * para as mesmas configurações.
+ */
+async function buildPrintCommand(
+  target: { tabId: number },
+  settings: PrintSettings,
+): Promise<{ landscape: boolean; params: Record<string, unknown> }> {
+  let paper: PaperRequest;
+  let landscape: boolean;
+  if (settings.paperSize === 'FullPage') {
+    // A folha contínua acompanha o conteúdo: as medidas vêm do layout real e
+    // a orientação do papel não se aplica.
+    paper = await resolveFullPageSize(target);
+    landscape = false;
+  } else {
+    const dimensions = resolvePaperSize(settings);
+    paper = {
+      widthInches: dimensions.widthMm / MM_PER_INCH,
+      heightInches: dimensions.heightMm / MM_PER_INCH,
+      marginInches: settings.marginMm / MM_PER_INCH,
+      scale: settings.scale,
+    };
+    // O Chrome troca largura e altura do papel quando landscape é verdadeiro.
+    landscape = settings.orientation === 'landscape';
+  }
+  return {
+    landscape,
+    params: {
+      paperWidth: paper.widthInches,
+      paperHeight: paper.heightInches,
+      marginTop: paper.marginInches,
+      marginBottom: paper.marginInches,
+      marginLeft: paper.marginInches,
+      marginRight: paper.marginInches,
+      scale: paper.scale,
+      printBackground: settings.printBackground,
+      displayHeaderFooter: settings.displayHeaderFooter,
+      preferCSSPageSize: false,
+    },
+  };
+}
+
 export async function convertTabToPdf(
   tabId: number,
   settings: PrintSettings,
@@ -78,37 +122,10 @@ export async function convertTabToPdf(
     emulated = true;
     signal.throwIfAborted();
 
-    let paper: PaperRequest;
-    let landscape: boolean;
-    if (settings.paperSize === 'FullPage') {
-      // A folha contínua acompanha o conteúdo: as medidas vêm do layout real e
-      // a orientação do papel não se aplica.
-      paper = await resolveFullPageSize(target);
-      landscape = false;
-    } else {
-      const dimensions = resolvePaperSize(settings);
-      paper = {
-        widthInches: dimensions.widthMm / MM_PER_INCH,
-        heightInches: dimensions.heightMm / MM_PER_INCH,
-        marginInches: settings.marginMm / MM_PER_INCH,
-        scale: settings.scale,
-      };
-      // O Chrome troca largura e altura do papel quando landscape é verdadeiro.
-      landscape = settings.orientation === 'landscape';
-    }
-
+    const { landscape, params } = await buildPrintCommand(target, settings);
     const response: unknown = await chrome.debugger.sendCommand(target, 'Page.printToPDF', {
+      ...params,
       landscape,
-      paperWidth: paper.widthInches,
-      paperHeight: paper.heightInches,
-      marginTop: paper.marginInches,
-      marginBottom: paper.marginInches,
-      marginLeft: paper.marginInches,
-      marginRight: paper.marginInches,
-      scale: paper.scale,
-      printBackground: settings.printBackground,
-      displayHeaderFooter: settings.displayHeaderFooter,
-      preferCSSPageSize: false,
       transferMode: 'ReturnAsStream',
     });
     if (typeof response !== 'object' || response === null || !('stream' in response) || typeof response.stream !== 'string') {
@@ -135,6 +152,45 @@ export async function convertTabToPdf(
     return { title: title || 'pagina', byteLength };
   } finally {
     if (stream) await chrome.debugger.sendCommand(target, 'IO.close', { handle: stream }).catch(() => undefined);
+    if (emulated) await chrome.debugger.sendCommand(target, 'Emulation.setEmulatedMedia', { media: '' }).catch(() => undefined);
+    await detach();
+  }
+}
+
+/**
+ * Impressão completa em um único Base64 — usada pela impressão antecipada do
+ * menu, que guarda o resultado em RAM por alguns segundos até a primeira
+ * conversão. Os parâmetros de papel são exatamente os do fluxo normal; só o
+ * modo de transferência muda, porque aqui o arquivo fica inteiro em memória
+ * (limitado a 32 MB pelo chamador).
+ */
+export async function printTabToPdfBase64(
+  tabId: number,
+  settings: PrintSettings,
+  signal: AbortSignal,
+): Promise<{ data: string; title: string; byteLength: number }> {
+  const { target, title, detach } = await openTabSession(tabId, signal, 'impressão');
+  let emulated = false;
+  try {
+    await chrome.debugger.sendCommand(target, 'Emulation.setEmulatedMedia', { media: 'screen' });
+    emulated = true;
+    signal.throwIfAborted();
+
+    const { landscape, params } = await buildPrintCommand(target, settings);
+    const response: unknown = await chrome.debugger.sendCommand(target, 'Page.printToPDF', {
+      ...params,
+      landscape,
+      transferMode: 'ReturnAsBase64',
+    });
+    if (typeof response !== 'object' || response === null || !('data' in response) || typeof response.data !== 'string') {
+      throw new ConversionError('O Chrome não retornou um PDF válido.');
+    }
+    signal.throwIfAborted();
+    const byteLength = base64ByteLength(response.data);
+    if (byteLength === 0) throw new ConversionError('O PDF gerado está vazio.');
+    if (byteLength > MAX_FILE_BYTES) throw new ConversionError('O PDF excedeu o limite inicial de 32 MB. Tente uma página menor.');
+    return { data: response.data, title: title || 'pagina', byteLength };
+  } finally {
     if (emulated) await chrome.debugger.sendCommand(target, 'Emulation.setEmulatedMedia', { media: '' }).catch(() => undefined);
     await detach();
   }

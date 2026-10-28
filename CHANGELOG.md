@@ -4,6 +4,20 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.8.0] — 2026-10-28
+
+### Adicionado
+
+- **PDF com o menu aberto**: ao abrir o menu de formatos, a extensão imprime a aba no mesmo instante, com a página ainda em foco, e guarda o PDF em RAM por uso único. Escolher "PDF" entrega esse arquivo — menus e painéis abertos entram no documento, com o texto original selecionável, A4 e cabeçalho/rodapé pelas configurações da prévia. Ajustes na prévia, navegação, fechamento da aba ou 60 s de espera descartam o PDF guardado e a conversão reimprime ao vivo, como antes.
+- **Atalho Ctrl+Shift+P ("PDF agora")**: gera o PDF com a página em foco, sem abrir o menu, e abre a prévia pronta — o caminho determinístico para portais que fecham menus no primeiro `blur`.
+
+### Técnico
+
+- Impressão antecipada em `public/early-print.js` (script clássico bloqueante no `<head>` do popup, antes do bundle), pedindo ao service worker a impressão com as configurações salvas por mensagem `early-print`.
+- Cache de uso único em RAM (`src/background/early-print-cache.ts`): uma entrada por aba, amarrada à URL vigente e às configurações de impressão, expira em 60 s, invalidado ao navegar/fechar a aba, teto de 32 MB no total — sem persistência em disco ou storage.
+- O fluxo normal e o antecipado compartilham os mesmos parâmetros de papel (`buildPrintCommand` em `converter.ts`); PNG e TXT abortam e aguardam uma impressão em voo para não disputar o debugger da aba.
+- Sem permissões novas; a guarda de blur proposta para o menu foi descartada (só poderia ser instalada depois do foco já perdido — ver `docs/early-print.md`).
+
 ## [1.7.1] — 2026-10-28
 
 ### Corrigido
