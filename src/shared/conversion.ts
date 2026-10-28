@@ -16,7 +16,7 @@ export interface ConversionRequest {
 
 export type ConversionEvent =
   | { type: 'chunk'; data: string; byteLength: number }
-  | { type: 'complete'; title: string; byteLength: number }
+  | { type: 'complete'; title: string; byteLength: number; ocrFailed?: boolean }
   | { type: 'error'; message: string };
 
 export class ConversionError extends Error {}

@@ -60,4 +60,31 @@ describe('sessão da captura', () => {
     await expect(convertSnapshot(7, await storeSnapshot(message), chunk, controller.signal)).rejects.toThrow();
     expect(chunk).not.toHaveBeenCalled();
   });
+
+  it('adiciona texto OCR e fecha o documento isolado após concluir', async () => {
+    const closeDocument = vi.fn(async () => undefined);
+    vi.stubGlobal('chrome', {
+      tabs: { get: getTab },
+      runtime: { getURL: (path: string) => `chrome-extension://test/${path}`, sendMessage: vi.fn(async () => ({
+        text: 'Empresa', words: [{ text: 'Empresa', confidence: 99, bbox: { x0: 0, y0: 0, x1: 2, y1: 2 } }],
+      })) },
+      offscreen: { hasDocument: vi.fn(async () => false), createDocument: vi.fn(async () => undefined), closeDocument },
+    });
+    const token = await storeSnapshot(message);
+    const parts: string[] = [];
+    const result = await convertSnapshot(7, token, (chunk) => parts.push(atob(chunk)), new AbortController().signal);
+    expect(result.ocrFailed).toBe(false);
+    expect(parts.join('')).toContain('3 Tr');
+    expect(closeDocument).toHaveBeenCalledOnce();
+  });
+
+  it('preserva imagem e sinaliza aviso quando não há texto reconhecido', async () => {
+    vi.stubGlobal('chrome', {
+      tabs: { get: getTab },
+      runtime: { getURL: (path: string) => path, sendMessage: vi.fn(async () => null) },
+      offscreen: { hasDocument: vi.fn(async () => true), closeDocument: vi.fn(async () => undefined) },
+    });
+    const result = await convertSnapshot(7, await storeSnapshot(message), vi.fn(), new AbortController().signal);
+    expect(result.ocrFailed).toBe(true);
+  });
 });

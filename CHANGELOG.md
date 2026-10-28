@@ -4,6 +4,12 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.7.0] — 2026-10-28
+
+### Adicionado
+
+- OCR local no PDF da tela: reconhecimento de texto Tesseract.js 5 (português + inglês) em PDF de imagem com camada invisível selecionável, processamento 100% local, nova permissão `offscreen` e distribuição de recursos em `dist/ocr`. Em caso de falha ou timeout, PDF de imagem com aviso persistente.
+
 ## [1.6.2] — 2026-10-26
 
 ### Adicionado

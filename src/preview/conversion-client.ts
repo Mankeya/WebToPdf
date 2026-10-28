@@ -6,6 +6,7 @@ import type { PrintSettings } from '../shared/settings';
 export interface ConvertedFile {
   bytes: Uint8Array<ArrayBuffer>;
   title: string;
+  ocrFailed?: boolean;
 }
 
 /**
@@ -104,7 +105,7 @@ export function requestConversion(
           if (!matchesFileSignature(format, bytes)) {
             throw new Error(messages.invalid);
           }
-          finish(undefined, { bytes, title: message.title });
+          finish(undefined, { bytes, title: message.title, ocrFailed: 'ocrFailed' in message && message.ocrFailed === true });
         }
       } catch (error) {
         finish(error instanceof Error ? error : new Error(messages.failed));

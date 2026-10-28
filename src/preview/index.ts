@@ -19,6 +19,7 @@ function element<T extends HTMLElement>(selector: string): T {
 }
 
 const status = element<HTMLElement>('#status');
+const ocrWarning = element<HTMLElement>('#ocr-warning');
 const paperGrid = element<HTMLElement>('#paper-size');
 const customFields = element<HTMLElement>('#custom-paper-fields');
 const customWidth = element<HTMLInputElement>('#custom-width');
@@ -59,6 +60,7 @@ const isPdf = format === 'pdf' || format === 'screen-pdf';
 /** Formatos de texto: a prévia mostra o conteúdo extraído em `<pre>`. */
 const isText = format === 'txt';
 const formatLabel = definition.label;
+let ocrFailed = false;
 
 let busy = false;
 let controller: AbortController | null = null;
@@ -231,12 +233,19 @@ async function convert(): Promise<void> {
     const result = await requestConversion(sourceTabId, format, settings, controller.signal);
     documentBytes = result.bytes;
     documentTitle = result.title;
+    ocrFailed = result.ocrFailed ?? false;
+    ocrWarning.hidden = format !== 'screen-pdf' || !ocrFailed;
     if (!filenameEdited) filename.value = createConversionFilename(result.title, definition.extension);
     if (isPdf) {
       const pages = await loadPdfViewer(result.bytes);
-      status.textContent = format === 'screen-pdf'
-        ? 'PDF da tela pronto — área visível como imagem, sem texto selecionável.'
-        : `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
+      if (format === 'screen-pdf') {
+        let msg = 'PDF da tela pronto — área visível como imagem';
+        if (ocrFailed) msg += ' (OCR falhou: texto não reconhecido)';
+        else msg += ', com texto reconhecido. Confira nomes e números antes de enviar.';
+        status.textContent = msg;
+      } else {
+        status.textContent = `PDF pronto — ${pages} ${pages === 1 ? 'página' : 'páginas'}.`;
+      }
     } else if (isText) {
       showText(result.bytes);
       status.textContent = `${formatLabel} pronto.`;

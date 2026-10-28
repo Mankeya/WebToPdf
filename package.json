@@ -1,6 +1,6 @@
 {
   "name": "webtopdf",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "private": true,
   "description": "Extensão local para converter páginas web em PDF com prévia e ajustes de impressão.",
   "type": "module",
@@ -35,6 +35,9 @@
     "vitest": "5.0.5"
   },
   "dependencies": {
-    "pdfjs-dist": "^6.4.299"
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/por": "1.0.0",
+    "pdfjs-dist": "^6.4.299",
+    "tesseract.js": "^5.1.1"
   }
 }
