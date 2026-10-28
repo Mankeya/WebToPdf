@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) =>
     try {
       worker = await createWorker('por+eng', 1, {
         workerPath: chrome.runtime.getURL('ocr/worker.min.js'),
-        corePath: chrome.runtime.getURL('ocr/tesseract-core-lstm.wasm.js'),
+        corePath: chrome.runtime.getURL('ocr/tesseract-core-lstm.js'),
         langPath: chrome.runtime.getURL('ocr'),
         workerBlobURL: false,
         cacheMethod: 'none',

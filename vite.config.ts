@@ -11,7 +11,10 @@ export default defineConfig({
       mkdirSync(ocrDirectory, { recursive: true });
       for (const [source, name] of [
         ['tesseract.js/dist/worker.min.js', 'worker.min.js'],
-        ['tesseract.js-core/tesseract-core-lstm.wasm.js', 'tesseract-core-lstm.wasm.js'],
+        // A build separada (glue .js + binário .wasm) evita o fetch de um data
+        // URL embutido, que a CSP `connect-src 'self'` bloqueia. A build
+        // SINGLE_FILE (.wasm.js) embute o WASM num data:application/octet-stream.
+        ['tesseract.js-core/tesseract-core-lstm.js', 'tesseract-core-lstm.js'],
         ['tesseract.js-core/tesseract-core-lstm.wasm', 'tesseract-core-lstm.wasm'],
         ['@tesseract.js-data/por/4.0.0/por.traineddata.gz', 'por.traineddata.gz'],
         ['@tesseract.js-data/eng/4.0.0/eng.traineddata.gz', 'eng.traineddata.gz'],
