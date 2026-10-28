@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.7.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.7.0">download</a></sub>
+  <sub>Versão 1.7.1 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.7.1">download</a></sub>
 </p>
 
 <p align="center">
@@ -60,6 +60,10 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 
 <!-- novidades -->
 
+### v1.7.1 — 28/10/2026
+
+- OCR do PDF da tela carrega sem erros de política do navegador e mantém o texto reconhecido mesmo com palavras contendo caracteres especiais
+
 ### v1.7.0 — 28/10/2026
 
 - OCR local no PDF da tela: reconhece o texto da captura e deixa o arquivo selecionável para leitores automáticos, com processamento 100% local
@@ -67,10 +71,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 ### v1.6.2 — 26/10/2026
 
 - Novo formato PDF da tela para páginas com menus que fecham sozinhos: a captura acontece sozinha quando o menu abre, e o atalho Ctrl+Shift+S captura sem passar pelo menu
-
-### v1.6.1 — 26/10/2026
-
-- Design da prévia corrigido (ícones e caixas desalinhados na barra lateral) e novo botão de modo claro/escuro na tela de prévia.
 
 <!-- /novidades -->
 

@@ -1,6 +1,49 @@
 import { test, expect } from './fixtures';
 import { readdir } from 'node:fs/promises';
-import { jpegToPdf } from '../../src/shared/image-pdf';
+import { jpegToPdf, jpegToPdfWithOcr } from '../../src/shared/image-pdf';
+
+test('OCR local reconhece captura offline e gera texto selecionável em português', async ({ context, extensionId, extensionWorker }) => {
+  // O core precisa ser a build separada: a SINGLE_FILE embute o WASM num data
+  // URL e o fetch desse data URL viola a CSP `connect-src 'self'` da extensão.
+  const ocrFiles = await readdir('dist/ocr');
+  expect(ocrFiles).toContain('tesseract-core-lstm.js');
+  expect(ocrFiles).toContain('tesseract-core-lstm.wasm');
+  expect(ocrFiles).toContain('worker.min.js');
+  expect(ocrFiles).not.toContain('tesseract-core-lstm.wasm.js');
+
+  const page = await context.newPage();
+  await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  const image = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1000; canvas.height = 250;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 1000, 250);
+    ctx.fillStyle = 'black'; ctx.font = '36px Arial';
+    ctx.fillText('Razão social: Empresa São João', 30, 80);
+    ctx.fillText('CNPJ: 12.345.678/0001-90', 30, 150);
+    return canvas.toDataURL('image/jpeg', 0.95);
+  });
+  await context.setOffline(true);
+  const result = await extensionWorker.evaluate(async (image) => {
+    await chrome.offscreen.createDocument({ url: 'offscreen.html', reasons: [chrome.offscreen.Reason.WORKERS], justification: 'Teste OCR local' });
+    return await chrome.runtime.sendMessage({ type: 'ocr-recognize', image });
+  }, image);
+  expect(result?.text).toContain('CNPJ');
+  expect(result?.text).toContain('12.345.678/0001-90');
+  const bytes = jpegToPdfWithOcr(new Uint8Array(Buffer.from(image.split(',')[1]!, 'base64')), result);
+  const viewerFile = (await readdir('dist/assets')).find((name) => /^pdf-viewer-.*\.js$/.test(name))!;
+  await page.goto(`chrome-extension://${extensionId}/preview.html`);
+  const text = await page.evaluate(async ({ bytes, url }) => {
+    const { PdfViewer } = await import(url);
+    const container = document.querySelector('#pdf-container')!;
+    const viewer = new PdfViewer(container);
+    await viewer.load(new Uint8Array(bytes));
+    return container.querySelector('.textLayer')?.textContent;
+  }, { bytes: [...bytes], url: `chrome-extension://${extensionId}/assets/${viewerFile}` });
+  expect(text).toContain('Razão');
+  expect(text).toContain('São');
+  expect(text).toContain('12.345.678/0001-90');
+});
 
 test('captura indisponível não bloqueia o menu nem produz um PDF da página errada', async ({ context, extensionId }) => {
   const popup = await context.newPage();

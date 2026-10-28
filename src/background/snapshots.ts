@@ -29,8 +29,20 @@ async function runOcr(jpegBase64: string, signal: AbortSignal): Promise<OcrResul
   let timer: ReturnType<typeof setTimeout> | undefined;
   let cancel: (() => void) | undefined;
   try {
+    const payload = { type: 'ocr-recognize', image: `data:image/jpeg;base64,${jpegBase64}` };
+    const request = (async (): Promise<unknown> => {
+      try {
+        return await chrome.runtime.sendMessage(payload);
+      } catch {
+        // O documento offscreen pode ainda não ter registrado o listener logo
+        // após createDocument; uma única nova tentativa cobre essa corrida.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        if (signal.aborted) return null;
+        return await chrome.runtime.sendMessage(payload);
+      }
+    })();
     const response: unknown = await Promise.race([
-      chrome.runtime.sendMessage({ type: 'ocr-recognize', image: `data:image/jpeg;base64,${jpegBase64}` }),
+      request,
       new Promise<null>((resolve) => {
         cancel = () => resolve(null);
         signal.addEventListener('abort', cancel, { once: true });

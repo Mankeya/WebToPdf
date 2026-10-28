@@ -125,22 +125,29 @@ export function jpegToPdfWithOcr(jpeg: Uint8Array, ocr: OcrResult): Uint8Array<A
   for (const word of ocr.words) {
     if (!word.text.trim()) continue;
     // A fonte WinAnsi usa bytes CP1252, nunca UTF-8 (acentos precisam de um byte).
-    const txt = [...word.text].map((char) => {
+    // Palavra com caractere fora de CP1252 é descartada uma a uma; as demais
+    // seguem na camada, para um caractere raro não anular o OCR inteiro.
+    const codes: string[] = [];
+    let supported = true;
+    for (const char of [...word.text]) {
       let code = char.codePointAt(0)!;
       if (code > 255) {
         const windowsCharacters = '€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008dŽ\u008f\u0090‘’“”•–—˜™š›œ\u009džŸ';
         const index = windowsCharacters.indexOf(char);
         if (index >= 0) code = 128 + index;
       }
-      if (code > 255) throw new Error('Caractere OCR não suportado pela fonte.');
-      return code.toString(16).padStart(2, '0');
-    }).join('');
+      if (code > 255) { supported = false; break; }
+      codes.push(code.toString(16).padStart(2, '0'));
+    }
+    if (!supported) continue;
+    const txt = codes.join('');
     const x = word.bbox.x0 * scaleX;
     const y = h - word.bbox.y1 * scaleY; // PDF coords: origin bottom-left
     const fs = Math.max(1, (word.bbox.y1 - word.bbox.y0) * scaleY);
     textCommands.push(`BT /F1 ${fs} Tf 3 Tr ${x.toFixed(2)} ${y.toFixed(2)} Td <${txt}> Tj ET`);
   }
   const imageCmd = `q ${w} 0 0 ${h} 0 0 cm /Im0 Do Q\n`;
+  if (!textCommands.length) throw new Error('Nenhum texto OCR suportado para a camada invisível.');
   const contentStream = imageCmd + textCommands.join('\n') + '\n';
 
   object(6, `<< /Length ${encoder.encode(contentStream).length} >>\nstream\n${contentStream}endstream`);
