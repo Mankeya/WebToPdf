@@ -87,4 +87,25 @@ describe('sessão da captura', () => {
     const result = await convertSnapshot(7, await storeSnapshot(message), vi.fn(), new AbortController().signal);
     expect(result.ocrFailed).toBe(true);
   });
+
+  it('repete o pedido de OCR quando o documento offscreen ainda não estava pronto', async () => {
+    const sendMessage = vi.fn()
+      .mockRejectedValueOnce(new Error('Receiving end does not exist.'))
+      .mockResolvedValueOnce({ text: 'Empresa', words: [{ text: 'Empresa', confidence: 99, bbox: { x0: 0, y0: 0, x1: 2, y1: 2 } }] });
+    vi.stubGlobal('chrome', {
+      tabs: { get: getTab },
+      runtime: { getURL: (path: string) => `chrome-extension://test/${path}`, sendMessage },
+      offscreen: {
+        hasDocument: vi.fn(async () => false),
+        createDocument: vi.fn(async () => undefined),
+        closeDocument: vi.fn(async () => undefined),
+      },
+    });
+    const token = await storeSnapshot(message);
+    const promise = convertSnapshot(7, token, vi.fn(), new AbortController().signal);
+    await vi.advanceTimersByTimeAsync(300);
+    const result = await promise;
+    expect(sendMessage).toHaveBeenCalledTimes(2);
+    expect(result.ocrFailed).toBe(false);
+  });
 });
