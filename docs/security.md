@@ -84,11 +84,20 @@ downloads do Chrome. Nenhum byte sai do perfil do navegador.
 - O PDF da tela é montado por `src/shared/image-pdf.ts`: um contêiner PDF mínimo com `/Filter /DCTDecode` embutindo os bytes JPEG exatamente como vieram, sem reinterpretação, sem fontes, sem JavaScript e sem recursos externos. O PDF resultante não tem camada de texto nem links.
 - O atalho `capture-screen-pdf` (`Ctrl+Shift+S`) passa pelo `chrome.commands` nativo: a página nunca perde o foco, então não há blur para fechar menus — é o caminho garantido quando a captura antecipada perde a corrida.
 
+## Impressão antecipada (PDF)
+
+- A impressão é disparada por `public/early-print.js`, um script clássico (`'self'`, sem inline, sem `eval`) carregado antes do bundle do popup; ele só envia mensagem `early-print` ao service worker, que aceita apenas vindas do próprio `popup.html` — **nenhuma permissão nova**.
+- O worker imprime a aba com `Page.printToPDF` pelos **mesmos parâmetros** do fluxo normal (`buildPrintCommand`), com as configurações salvas, e guarda o Base64 em RAM (`src/background/early-print-cache.ts`): uma entrada por aba, **uso único**, amarrada à URL vigente e às configurações usadas, expira em 60 s, invalidada ao navegar/fechar a aba, com teto de 32 MB no total. Nada é gravado em `storage`, disco ou rede.
+- A conversão do formato PDF consome o cache só se a URL e as configurações continuarem as mesmas; ajustes na prévia, navegação, expiração ou URL ilegível descartam o PDF e a conversão reimprime ao vivo pelo fluxo normal. Falha nenhuma da impressão antecipada bloqueia o menu ou os demais formatos.
+- PNG e TXT abortam e aguardam uma impressão em voo (`settleEarlyPrint`) antes de anexar o debugger, para não disputar a sessão da aba.
+- O atalho `print-pdf-now` (`Ctrl+Shift+P`) passa pelo `chrome.commands` nativo: imprime com a página em foco (sem popup, sem blur) e abre a prévia pronta — é o caminho determinístico quando a impressão antecipada perde a corrida.
+
 ## Dados sensíveis
 
 - O documento convertido existe apenas como `Blob` na aba da prévia e é descartado ao fechar ou recarregar a aba.
 - As preferências salvas são apenas papel, orientação, margens, escala, fundos, cabeçalho/rodapé, a opção de conversão direta e o tema da prévia (claro/escuro).
 - A captura antecipada do PDF da tela existe apenas em RAM no service worker (4 entradas, 30 s, invalidada por navegação/fechamento da aba).
+- A impressão antecipada do PDF existe apenas em RAM no service worker (1 entrada por aba, uso único, 60 s, teto de 32 MB, invalidada por navegação/fechamento da aba ou divergência de configurações).
 - Nada é enviado a servidores, não há conta, telemetria ou analytics.
 
 ## Riscos residuais
