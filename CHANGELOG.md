@@ -4,6 +4,10 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+### Corrigido
+
+- OCR do PDF da tela: o motor WASM agora é carregado pela build separada, eliminando os erros de Content Security Policy no console; nova tentativa única quando o documento de OCR ainda está iniciando; palavras com caractere especial raro não anulam mais o texto reconhecido do PDF.
+
 ## [1.7.0] — 2026-10-28
 
 ### Adicionado
