@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <sub>Versão 1.8.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.8.0">download</a></sub>
+  <sub>Versão 1.9.0 · <a href="CHANGELOG.md">novidades</a> · <a href="https://github.com/Mankeya/WebToPdf/releases/tag/v1.9.0">download</a></sub>
 </p>
 
 <p align="center">
@@ -57,8 +57,13 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 | **Preferências lembradas** | Suas últimas opções de impressão sobrevivem ao reinício do navegador |
 | **Modo claro/escuro** | Botão no cabeçalho da prévia; o tema fica salvo e o documento permanece branco |
 | **Interface em português** | Toda a extensão, do botão ao mensaje de erro |
+| **Janela anônima** | Funciona em modo split: nada do anônimo é persistido no perfil e o download sempre abre "Salvar como…" |
 
 <!-- novidades -->
+
+### v1.9.0 — 29/10/2026
+
+- Funciona em janelas anônimas (Ctrl+Shift+N), com proteções extras: nada do anônimo fica salvo no perfil e todo download abre o diálogo Salvar como…
 
 ### v1.8.0 — 28/10/2026
 
@@ -68,10 +73,6 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 ### v1.7.1 — 28/10/2026
 
 - OCR do PDF da tela carrega sem erros de política do navegador e mantém o texto reconhecido mesmo com palavras contendo caracteres especiais
-
-### v1.7.0 — 28/10/2026
-
-- OCR local no PDF da tela: reconhece o texto da captura e deixa o arquivo selecionável para leitores automáticos, com processamento 100% local
 
 <!-- /novidades -->
 
@@ -83,6 +84,8 @@ O PDF usa o motor de impressão do próprio Chrome: sai **paginado**, com **text
 2. Descompacte o `.zip`.
 3. Abra `chrome://extensions`, ative o **Modo do desenvolvedor** e escolha **Carregar sem compactação**.
 4. Selecione a pasta `webtopdf` extraída e fixe o ícone na barra de extensões.
+
+**Para usar em janelas anônimas**: abra `chrome://extensions` → **Detalhes** do WEBtoPDF e ative **Permitir na navegação anônima** (em alguns navegadores já vem ligado). Sem esse interruptor, o Chrome não executa a extensão em janelas anônimas.
 
 Para instalar sem modo desenvolvedor, é preciso publicar na Chrome Web Store. O material da publicação está em [`store/`](store/listing.md) e o guia de distribuição em [`docs/distribution.md`](docs/distribution.md).
 
@@ -119,6 +122,14 @@ No fim do menu, ative **Conversão direta em 1 clique**: da próxima vez, o íco
 
 A aba original precisa continuar aberta enquanto você ajusta e regenera o documento. Se ela for fechada, a prévia já pronta continua disponível para download.
 
+### Janela anônima
+
+Com **Permitir na navegação anônima** ativado nos detalhes da extensão, o WEBtoPDF funciona normalmente em janelas anônimas (`Ctrl+Shift+N`), com todas as regras de privacidade reforçadas:
+
+- Ajustes feitos no anônimo valem **só para aquela janela** — nada é gravado no perfil normal.
+- Todo download abre **"Salvar como…"**, para o arquivo cair onde você escolher.
+- Ao fechar a janela anônima, tudo que existia nela (caches em memória incluídos) é descartado junto.
+
 ## Privacidade
 
 O WEBtoPDF **não envia nada para fora do seu computador**.
@@ -130,6 +141,7 @@ O WEBtoPDF **não envia nada para fora do seu computador**.
 - O documento convertido (PDF, imagem ou texto) fica **apenas na memória** da aba da prévia e é descartado ao fechar ou recarregar a aba.
 - No **PDF da tela**, a captura antecipada fica **apenas na memória do service worker**, associada à aba e à URL, por no máximo **30 segundos** e no máximo quatro capturas — e é apagada ao navegar, fechar a aba ou expirar. Nada é gravado em disco, em `storage` ou enviado para fora.
 - No **PDF**, a impressão antecipada segue as mesmas regras: fica **apenas na memória do service worker**, associada à aba, à URL e às configurações usadas, por no máximo **60 segundos**, de **uso único** (a primeira conversão a consome) e com teto de **32 MB** no total — apagada ao navegar, fechar a aba ou expirar. Nada é gravado em disco, em `storage` ou enviado para fora.
+- Em **janelas anônimas**, a extensão roda em processo separado (modo split): preferências só são lidas, nunca gravadas, e todo download abre **"Salvar como…"** — fechar a janela apaga tudo.
 
 A extensão pede quatro permissões, todas com uso restrito e verificável:
 

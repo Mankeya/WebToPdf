@@ -80,7 +80,7 @@ export async function storeSnapshot(message: unknown): Promise<string | null> {
   if (data.length === 0 || base64ByteLength(data) > MAX_FILE_BYTES - 2048 || !/^[A-Za-z0-9+/]+={0,2}$/.test(data)) return null;
   const tab = await chrome.tabs.get(message.tabId as number);
   // Mudança de aba ou navegação durante a captura invalida os pixels.
-  if (!tab.active || tab.url !== message.url || tab.incognito) return null;
+  if (!tab.active || tab.url !== message.url) return null;
   const token = cache.put(tab.id!, message.url, data);
   setTimeout(() => cache.prune(), 30_000);
   return token;
@@ -88,7 +88,7 @@ export async function storeSnapshot(message: unknown): Promise<string | null> {
 
 export async function captureSnapshot(): Promise<{ token: string; tabId: number } | null> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id === undefined || !isSupportedPage(tab.url) || tab.incognito) return null;
+  if (tab?.id === undefined || !isSupportedPage(tab.url)) return null;
   const data = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 92 });
   const token = await storeSnapshot({ tabId: tab.id, url: tab.url, data });
   return token ? { token, tabId: tab.id } : null;

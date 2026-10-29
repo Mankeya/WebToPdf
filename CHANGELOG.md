@@ -4,6 +4,19 @@ Todas as mudanças relevantes do WEBtoPDF. O formato segue [Keep a Changelog](ht
 
 ## [Não publicado]
 
+## [1.9.0] — 2026-10-29
+
+### Adicionado
+
+- **Janela anônima (modo split)**: o WEBtoPDF agora funciona em janelas de navegação anônima com todas as regras de privacidade reforçadas — ajustes feitos no anônimo valem só para aquela sessão (nada é gravado no perfil normal) e todo download abre o diálogo **"Salvar como…"**, independentemente da preferência de conversão direta. O Chrome exige o interruptor "Permitir na navegação anônima" em `chrome://extensions` → Detalhes, ativado uma vez pelo usuário.
+
+### Técnico
+
+- Manifesto com `"incognito": "split"` (processo próprio no anônimo, sem compartilhar memória com o perfil normal); `verify:manifest` agora bloqueia qualquer valor diferente de `split`.
+- Guard `setStorageIfPersistent` nos quatro pontos de gravação de preferências (ajustes de impressão, tema e conversão direta na prévia; conversão direta no menu) e força de `saveAs` em `startDownload`, tudo decidido por `chrome.extension.inIncognitoContext`.
+- Validação de captura da tela (`storeSnapshot`/`captureSnapshot`) deixa de recusar abas anônimas — no modo split a aba anônima tem os mesmos formatos.
+- Cobertura unitária do modo anônimo (detecção de contexto, supressão de gravação, saveAs forçado); a E2E automatizada não cobre anônimo por limitação do Chromium do Playwright (sem flag de linha de comando), com aceitação manual em `docs/production-checklist.md`.
+
 ## [1.8.0] — 2026-10-28
 
 ### Adicionado

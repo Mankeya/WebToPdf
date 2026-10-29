@@ -1,4 +1,5 @@
 import { sanitizeTitle } from '../shared/filename';
+import { isIncognitoContext } from '../shared/incognito';
 
 export type DownloadOutcome =
   | { status: 'complete' }
@@ -111,7 +112,11 @@ export async function startDownload(request: DownloadRequest): Promise<DownloadO
   const blob = new Blob([request.bytes], { type: MIME_TYPES[request.extension] ?? 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
 
-  if (request.saveAs) {
+  // Em janela anônima o download direto cairia no diretório padrão do perfil
+  // sem rastro escolhido pelo usuário; sempre abrimos o "Salvar como…".
+  const saveAs = request.saveAs || isIncognitoContext();
+
+  if (saveAs) {
     await reserveFilename(url, request.filename);
     try {
       // Com saveAs, o Chrome abre o diálogo nativo já preenchido com `filename`.

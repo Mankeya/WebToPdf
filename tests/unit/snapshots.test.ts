@@ -36,11 +36,16 @@ describe('sessão da captura', () => {
     expect(await storeSnapshot(value)).toBeNull();
   });
 
-  it('rejeita mudança de URL, aba inativa e janela anônima', async () => {
-    for (const patch of [{ url: 'https://outro.com/' }, { active: false }, { incognito: true }]) {
+  it('rejeita mudança de URL e aba inativa', async () => {
+    for (const patch of [{ url: 'https://outro.com/' }, { active: false }]) {
       getTab.mockResolvedValueOnce({ ...tab, ...patch });
       expect(await storeSnapshot(message)).toBeNull();
     }
+  });
+
+  it('aceita janela anônima (modo split): a aba anônima tem os mesmos formatos', async () => {
+    getTab.mockResolvedValueOnce({ ...tab, incognito: true });
+    expect(await storeSnapshot(message)).not.toBeNull();
   });
 
   it('não usa uma captura após navegar, expirar ou remover a aba', async () => {

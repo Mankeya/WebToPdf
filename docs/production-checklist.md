@@ -57,6 +57,20 @@ npm run package
 | 34 | Na prévia do PDF da tela, clique em **Baixar** | Arquivo `.pdf` salvo, abre no leitor de PDF como uma folha de imagem única, com o nome exibido |
 | 35 | Abra o menu, espere mais de 30 s e escolha **PDF da tela** | Captura expirou: mensagem clara orientando abrir a extensão de novo; nenhuma captura de outra página é usada no lugar |
 
+## Aceitação manual em janela anônima (modo split)
+
+A E2E automatizada não alcança janelas anônimas (o Chromium do Playwright não ativa extensões em anônimo por linha de comando). Estas etapas cobrem o modo split no Chrome real:
+
+| # | Ação | Resultado esperado |
+|---|---|---|
+| A1 | `chrome://extensions` → **Detalhes** do WEBtoPDF → ative **Permitir na navegação anônima** | Interruptor liga (se a extensão já estiver permitida, pode vir ligado por padrão) |
+| A2 | Abra uma janela anônima (`Ctrl+Shift+N`) e clique no ícone | O menu de formatos abre normalmente na janela anônima |
+| A3 | Converta a página em **PDF** e baixe | Prévia e download funcionam; **o download sempre abre "Salvar como…"**, mesmo com a conversão direta ativa no perfil normal |
+| A4 | Na janela anônima, altere margens/tema e feche a janela | As alterações valem enquanto a janela anônima está aberta |
+| A5 | Reabra o navegador (modo normal) e abra a prévia | Preferências de impressão, tema e conversão direta são **exatamente as que existiam antes** — nada do anônimo vazou |
+| A6 | Converta em aba normal após a janela anônima ter sido fechada | Tudo funciona como antes; nenhum resíduo do anônimo |
+| A7 | Desligue "Permitir na navegação anônima" e abra janela anônima | O ícone Some/está inativo no anônimo; o modo normal continua intacto |
+
 ## Verificações de privacidade
 
 - Nenhuma requisição de rede para domínios externos durante a conversão (verificar em `chrome://net-export` ou pela aba Network do DevTools da própria extensão).
