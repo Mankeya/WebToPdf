@@ -1,6 +1,7 @@
 import { CONVERSION_FORMATS, findFormat } from '../shared/format';
 import type { ConversionFormat } from '../shared/format';
 import { DIRECT_CONVERSION_KEY, parseDirectConversion } from '../shared/direct';
+import { setStorageIfPersistent } from '../shared/incognito';
 import { buildPreviewUrl, isSupportedPage } from '../shared/preview-url';
 import './styles.css';
 
@@ -173,7 +174,7 @@ async function readDirectConversion(): Promise<boolean> {
 
 async function persistDirectConversion(enabled: boolean): Promise<void> {
   try {
-    await chrome.storage.local.set({ [DIRECT_CONVERSION_KEY]: enabled });
+    await setStorageIfPersistent({ [DIRECT_CONVERSION_KEY]: enabled });
   } catch {
     // Sem persistência a escolha vale só nesta abertura do menu.
   }

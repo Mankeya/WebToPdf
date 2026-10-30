@@ -78,7 +78,7 @@ downloads do Chrome. Nenhum byte sai do perfil do navegador.
 ## Captura antecipada (PDF da tela)
 
 - A captura é disparada por `public/early-capture.js`, um script clássico (`'self'`, sem inline, sem `eval`) carregado antes do bundle do popup; ele só usa `chrome.tabs.captureVisibleTab` na aba ativa, concedida pela permissão `activeTab` já existente — **nenhuma permissão nova**.
-- A imagem JPEG viaja por `chrome.runtime.sendMessage` para o service worker, que valida tudo antes de aceitar: só mensagens vindas do próprio `popup.html`, só `data:image/jpeg;base64,`, só abas `http`/`https`, aba ativa, URL idêntica à que originou a captura e não anônima.
+- A imagem JPEG viaja por `chrome.runtime.sendMessage` para o service worker, que valida tudo antes de aceitar: só mensagens vindas do próprio `popup.html`, só `data:image/jpeg;base64,`, só abas `http`/`https`, aba ativa e URL idêntica à que originou a captura.
 - O cache mora **apenas em RAM** (`src/background/snapshot-cache.ts`): no máximo 4 entradas, expiram em 30 s, cada entrada tem um token UUID de uso único, e as capturas são apagadas ao navegar, fechar a aba, trocar de URL ou expirar. Nada é gravado em `storage`, disco ou rede.
 - Na conversão, o token só resolve se a aba e a URL continuarem as mesmas da captura — uma navegação no meio invalida o token, e o erro orienta a abrir a extensão de novo. Um token ausente ou inválido **nunca** cai para uma captura posterior: a conversão falha com mensagem clara.
 - O PDF da tela é montado por `src/shared/image-pdf.ts`: um contêiner PDF mínimo com `/Filter /DCTDecode` embutindo os bytes JPEG exatamente como vieram, sem reinterpretação, sem fontes, sem JavaScript e sem recursos externos. O PDF resultante não tem camada de texto nem links.
@@ -91,6 +91,16 @@ downloads do Chrome. Nenhum byte sai do perfil do navegador.
 - A conversão do formato PDF consome o cache só se a URL e as configurações continuarem as mesmas; ajustes na prévia, navegação, expiração ou URL ilegível descartam o PDF e a conversão reimprime ao vivo pelo fluxo normal. Falha nenhuma da impressão antecipada bloqueia o menu ou os demais formatos.
 - PNG e TXT abortam e aguardam uma impressão em voo (`settleEarlyPrint`) antes de anexar o debugger, para não disputar a sessão da aba.
 - O atalho `print-pdf-now` (`Ctrl+Shift+P`) passa pelo `chrome.commands` nativo: imprime com a página em foco (sem popup, sem blur) e abre a prévia pronta — é o caminho determinístico quando a impressão antecipada perde a corrida.
+
+## Janela anônima (modo split)
+
+- O manifesto declara `"incognito": "split"`: em janela anônima o Chrome cria um **processo separado** da extensão, com service worker próprio, sem compartilhar memória nem estado com o processo normal.
+- **Leitura de preferências** (papel, margens, tema, conversão direta) funciona no anônimo — o perfil normal é somente leitura lá.
+- **Gravação de preferências é suprimida no contexto anônimo** (`setStorageIfPersistent`): ajustes feitos em janela anônima valem só para aquela sessão e nada é persistido no perfil. Os quatro pontos de gravação passam por esse guard: ajustes de impressão, tema, conversão direta na prévia e conversão direta no menu.
+- **Downloads sempre abrem "Salvar como…"** no anônimo (`startDownload` força `saveAs`), independentemente da opção do usuário: o arquivo nunca cai silenciosamente no diretório padrão.
+- Caches em RAM (captura antecipada e impressão antecipada) funcionam normalmente no processo anônimo e morrem com ele ao fechar a janela — nenhum resíduo.
+- O toggle "Permitir na navegação anônima" em `chrome://extensions` → Detalhes é **controlado pelo Chrome, não pelo manifesto**: sem ele ligado, o Chrome não executa a extensão em janelas anônimas e ela some do menu. O usuário precisa ativá-lo uma vez.
+- A E2E automatizada não cobre janela anônima: o Chromium do Playwright não habilita extensões em anônimo por linha de comando e não existe flag ou política que contorne isso (validado empiricamente). A cobertura é unitária (detecção de contexto e saveAs forçado) + aceitação manual descrita no checklist de produção.
 
 ## Dados sensíveis
 

@@ -1,6 +1,6 @@
 {
   "name": "webtopdf",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "private": true,
   "description": "Extensão local para converter páginas web em PDF com prévia e ajustes de impressão.",
   "type": "module",

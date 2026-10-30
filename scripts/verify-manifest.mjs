@@ -24,6 +24,10 @@ const problems = [];
 
 if (manifest.manifest_version !== 3) problems.push(`manifest_version deve ser 3, encontrado ${manifest.manifest_version}`);
 
+// Modo split: a extensão roda em janela anônima com processo próprio, sem
+// compartilhar estado com o perfil normal.
+if (manifest.incognito !== 'split') problems.push(`incognito deve ser "split", encontrado ${JSON.stringify(manifest.incognito)}`);
+
 if (manifest.version !== packageVersion) {
   problems.push(`Versão do manifesto (${manifest.version}) diferente da do pacote (${packageVersion})`);
 }

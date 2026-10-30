@@ -1,6 +1,7 @@
 import { DEFAULT_PRINT_SETTINGS, PAPER_SIZES, parsePrintSettings, resolvePaperSizeOriented } from '../shared/settings';
 import type { PaperSize, PrintSettings } from '../shared/settings';
 import { DIRECT_CONVERSION_KEY, parseDirectConversion } from '../shared/direct';
+import { isIncognitoContext, setStorageIfPersistent } from '../shared/incognito';
 import { THEME_KEY, parseTheme } from '../shared/theme';
 import type { Theme } from '../shared/theme';
 import { createConversionFilename } from '../shared/filename';
@@ -280,10 +281,13 @@ async function downloadFile(saveAs: boolean): Promise<void> {
   if (busy || !documentBytes) return;
   const name = filename.value.trim() || createConversionFilename(documentTitle, definition.extension);
   const safeName = resolveDownloadFilename(name, documentTitle, definition.extension);
+  // Em janela anônima o downloader força o "Salvar como…"; a mensagem segue o
+  // que de fato vai acontecer, não o que o botão pediu.
+  const willSaveAs = saveAs || isIncognitoContext();
   try {
     busy = true;
     updateControls();
-    status.textContent = saveAs ? 'Abrindo diálogo de salvamento…' : `Baixando ${formatLabel}…`;
+    status.textContent = willSaveAs ? 'Abrindo diálogo de salvamento…' : `Baixando ${formatLabel}…`;
     const outcome = await startDownload({ bytes: documentBytes, filename: safeName, saveAs, extension: definition.extension });
     if (outcome.status === 'complete') status.textContent = `${formatLabel} salvo com sucesso.`;
     else if (outcome.status === 'cancelled') status.textContent = 'O download foi cancelado.';
@@ -326,7 +330,7 @@ async function loadDirectConversion(): Promise<void> {
 
 async function persistDirectConversion(): Promise<void> {
   try {
-    await chrome.storage.local.set({ [DIRECT_CONVERSION_KEY]: directToggle.checked });
+    await setStorageIfPersistent({ [DIRECT_CONVERSION_KEY]: directToggle.checked });
   } catch {
     // Ignora falhas de armazenamento.
   }
@@ -358,7 +362,7 @@ async function toggleTheme(): Promise<void> {
   const next: Theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
   applyTheme(next);
   try {
-    await chrome.storage.local.set({ [THEME_KEY]: next });
+    await setStorageIfPersistent({ [THEME_KEY]: next });
   } catch {
     // Sem persistência o tema vale só nesta sessão da prévia.
   }
@@ -366,7 +370,7 @@ async function toggleTheme(): Promise<void> {
 
 async function persistSettings(): Promise<void> {
   try {
-    await chrome.storage.local.set({ printSettings: savedSettings });
+    await setStorageIfPersistent({ printSettings: savedSettings });
   } catch {
     // Ignora falhas de armazenamento.
   }
